@@ -2,6 +2,9 @@ package com.himadri.heartgardenreservation;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Collections;
 
@@ -9,13 +12,18 @@ import java.util.Collections;
 public class Application {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(Application.class);
-        String port;
         if (System.getenv("PORT") != null) {
-            port = System.getenv("PORT");
-        } else {
-            port = "8080";
+            String port = System.getenv("PORT");
+            app.setDefaultProperties(Collections.singletonMap("server.port", port));
         }
-        app.setDefaultProperties(Collections.singletonMap("server.port", port));
+
         app.run(args);
+    }
+
+
+    @RequestMapping(method = RequestMethod.GET, value = "/_ah/warmup")
+    @ResponseBody
+    public String warmup() {
+        return "OK";
     }
 }

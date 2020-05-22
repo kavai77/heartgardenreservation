@@ -15,7 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+import java.util.TimeZone;
+import java.util.UUID;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 import static java.lang.String.format;
@@ -41,7 +46,6 @@ public class ReservationController {
                 final Customer customer = new Customer(UUID.randomUUID().toString(), nameInput, emailInput, System.currentTimeMillis());
                 final Key<Customer> customerKey = ofy().save().entity(customer).now();
 
-                dateInput = dateInput.substring(0, 10);
                 List<Long> slots = getSlots(dateInput, timeInput);
                 for (var slot : slots) {
                     Reservation reservation = ofy().load().type(Reservation.class).id(slot).now();

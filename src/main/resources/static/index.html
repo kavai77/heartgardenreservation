@@ -11,38 +11,75 @@
 </head>
 <body>
 <div class="container">
-  <h1>Reserve a Seat</h1>
-  <h3>At Heart-Garden Wicked Waffles</h3>
-  <form id="reservationForm" action="/reserve" method="post">
+  <form id="reservationForm" action="/reserve" method="post" novalidate>
       <div class="form-group">
         <label for="nameInput">Name</label>
         <input type="text" class="form-control" id="nameInput" name="nameInput" required>
+          <div class="valid-feedback">
+              Looks good!
+          </div>
+          <div class="invalid-feedback">
+              Please enter your name
+          </div>
       </div>
       <div class="form-group">
-        <label for="emailInput">Email</label>
-        <input type="email" class="form-control" id="emailInput"  name="emailInput" aria-describedby="emailHelp" required >
-        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+          <label for="emailInput">Email</label>
+          <input type="email" class="form-control" id="emailInput"  name="emailInput" aria-describedby="emailHelp" required >
+          <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+          <div class="valid-feedback">
+              Looks good!
+          </div>
+          <div class="invalid-feedback">
+              Please enter a valid email address
+          </div>
       </div>
       <div class="form-group">
-        <label for="dateInput">Date</label>
-        <select id="dateInput" name="dateInput" class="form-control" required>
+            <label for="dateInput">Date</label>
+            <select id="dateInput" name="dateInput" class="form-control" required>
+            <div class="valid-feedback">
+                Looks good!
+            </div>
+            <div class="invalid-feedback">
+                Please select the date of your reservation
+            </div>
         </select>
       </div>
       <div class="form-group">
-        <label for="timeInput">Time</label>
-        <select id="timeInput" name="timeInput" class="form-control" required>
-        </select>
+          <label for="timeInput">Time</label>
+          <select id="timeInput" name="timeInput" class="form-control" required>
+          </select>
+          <div class="valid-feedback">
+              Looks good!
+          </div>
+          <div class="invalid-feedback">
+              Please select the starting time of your reservation
+          </div>
       </div>
       <div class="form-group">
-        <label for="nbOfGuest">Number of Guests</label>
-        <select id="nbOfGuest" name="nbOfGuest" class="form-control">
-        </select>
+          <label for="nbOfGuest">Number of Guests</label>
+          <select id="nbOfGuest" name="nbOfGuest" class="form-control" required>
+          </select>
+          <div class="valid-feedback">
+              Looks good!
+          </div>
+          <div class="invalid-feedback">
+              Please select the number of guests.
+          </div>
       </div>
-    <div class="form-group">
-      <div id="recaptcha" class="g-recaptcha" data-sitekey="6LfQKPUUAAAAAL6jh1fVbWmX02XahEN7blhmmAU3"></div>
-    </div>
-
-    <button id="submit" type="submit" class="btn btn-primary">Reserve</button>
+      <div class="form-group form-check">
+          <input type="checkbox" class="form-check-input" id="healthyCheck" required>
+          <label class="form-check-label" for="healthyCheck">I do not have any health issues.</label>
+          <div class="valid-feedback">
+              Looks good!
+          </div>
+          <div class="invalid-feedback">
+              We cannot serve you if you have any health issues.
+          </div>
+      </div>
+      <div class="form-group">
+          <div id="recaptcha" class="g-recaptcha" data-sitekey="6LfQKPUUAAAAAL6jh1fVbWmX02XahEN7blhmmAU3"></div>
+      </div>
+      <button id="submit" type="submit" class="btn btn-primary">Reserve</button>
   </form>
 </div>
 

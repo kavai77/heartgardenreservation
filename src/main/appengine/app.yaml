@@ -1,1 +1,3 @@
 runtime: java11
+inbound_services:
+  - warmup
