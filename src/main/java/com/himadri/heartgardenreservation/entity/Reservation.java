@@ -3,12 +3,10 @@ package com.himadri.heartgardenreservation.entity;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -16,6 +14,9 @@ import java.util.List;
 @Entity
 public class Reservation {
     @Id
+    private String id;
+    @Index
     private long dateTime;
-    private List<Key<Customer>> customers = new ArrayList<>();
+    @Index
+    private Key<Customer> customerKey;
 }

@@ -20,7 +20,6 @@ public class Application {
         app.run(args);
     }
 
-
     @RequestMapping(method = RequestMethod.GET, value = "/_ah/warmup")
     @ResponseBody
     public String warmup() {

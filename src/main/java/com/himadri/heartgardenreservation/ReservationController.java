@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -71,54 +72,40 @@ public class ReservationController {
         @RequestParam String dateInput,
         @RequestParam String timeInput,
         @RequestParam int nbOfGuests,
-        @RequestParam("g-recaptcha-response") String recatcha
+        @RequestParam("g-recaptcha-response") String recatcha,
+        Model model
     ) {
-//        return ofy().transactNew( () -> {
         try {
             final Customer customer = new Customer(UUID.randomUUID().toString(), nameInput, emailInput, nbOfGuests,
                 System.currentTimeMillis());
             final Key<Customer> customerKey = ofy().save().entity(customer).now();
 
             List<Long> slots = getSlotsToBeBooked(dateInput, timeInput);
-            List<Reservation> reservations = slots.stream()
-                .map(slot -> {
-                    var reservation = ofy().load().type(Reservation.class).id(slot).now();
-                    if (reservation == null) {
-                        var newReservation = new Reservation();
-                        newReservation.setDateTime(slot);
-                        return newReservation;
-                    } else {
-                        return reservation;
-                    }
-                })
-                .collect(Collectors.toList());
-            boolean anyMaxSlotViolation = reservations.stream()
-                .anyMatch(it -> it.getCustomers().size() >= maxReservationPerSlots);
+
+            boolean anyMaxSlotViolation = slots.stream()
+                .map(it -> ofy().load().type(Reservation.class).filter("dateTime", it).count())
+                .anyMatch(it -> it >= maxReservationPerSlots);
             if (anyMaxSlotViolation) {
-                return "fullybooked";
+                model.addAttribute("message", "Unfortunately, we don't have any more free tables at this time. Please try again with another time.");
+                return "messagePage";
             }
 
-            reservations.stream()
-                .forEach(reservation -> {
-                    reservation.getCustomers().add(customerKey);
-                    ofy().save().entity(reservation);
-                });
+            slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, customerKey)));
 
-            return "confirmation";
+            model.addAttribute("message", "Thank you for your reservation! We are looking forward to see you at Heart-Garden Wicked Waffles.");
+            return "messagePage";
         } catch (Exception e) {
-            e.printStackTrace();
-            return "error";
+            model.addAttribute("message", "Error during reservation. Please try again.");
+            return "messagePage";
         }
-//        });
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/slots")
     @ResponseBody
     public List<Slots> slots() throws ParseException {
-        Key<Reservation> startKey = Key.create(Reservation.class, System.currentTimeMillis());
-        List<Reservation> reservations = ofy().load().type(Reservation.class).filterKey(">=",startKey).list();
+        List<Reservation> reservations = ofy().load().type(Reservation.class).filter("dateTime >=", System.currentTimeMillis()).list();
         Map<Long, Integer> reservationCount = new HashMap<>();
-        reservations.forEach(it -> reservationCount.put(it.getDateTime(), it.getCustomers().size()));
+        reservations.forEach(it -> reservationCount.compute(it.getDateTime(), (k, v) -> (v == null ? 1 : v + 1)));
         return getSlotDateAndTimes(reservationCount);
     }
 
@@ -128,22 +115,20 @@ public class ReservationController {
         @RequestParam String fromDate,
         @RequestParam String toDate
     ) throws ParseException {
-        Key<Reservation> startKey = Key.create(Reservation.class, dateFormat.parse(fromDate).getTime());
-        Key<Reservation> endKey = Key.create(Reservation.class, dateFormat.parse(toDate).getTime() + 1000 * 60 * 60 * 24);
         List<Reservation> reservations = ofy().load().type(Reservation.class)
-            .filterKey(">=",startKey)
-            .filterKey("<",endKey)
+            .filter("dateTime >=", dateFormat.parse(fromDate).getTime())
+            .filter("dateTime <",dateFormat.parse(toDate).getTime() + 1000 * 60 * 60 * 24)
             .list();
         Set<String> keySet = reservations.stream()
-            .flatMap(it -> it.getCustomers().stream())
-            .map(Key::getName)
+            .map(it -> it.getCustomerKey().getName())
             .collect(Collectors.toSet());
         Map<String, Customer> customers = ofy().load().type(Customer.class).ids(keySet);
         var customerReservation = new LinkedHashMap<String, Reservations>();
         for (var reservation: reservations) {
-            for (var customerKey: reservation.getCustomers()) {
-                var customer = customers.get(customerKey.getName());
-                Reservations res = customerReservation.computeIfAbsent(customerKey.getName(), k -> new Reservations(
+            var customer = customers.get(reservation.getCustomerKey().getName());
+            if (customer != null) {
+                Reservations res = customerReservation.computeIfAbsent(customer.getId(), k -> new Reservations(
+                    customer.getId(),
                     dateFormat.format(new Date(reservation.getDateTime())),
                     new ArrayList<>(),
                     customer.getName(),
@@ -156,6 +141,16 @@ public class ReservationController {
             }
         }
         return customerReservation.values();
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, value = "/reservation")
+    @ResponseBody
+    public String deleteReservation(@RequestParam String customerUUID) {
+        Key<Customer> customerKey = Key.create(Customer.class, customerUUID);
+        List<Reservation> reservationList = ofy().load().type(Reservation.class).filter("customerKey", customerKey).list();
+        ofy().delete().entities(reservationList);
+        ofy().delete().key(customerKey);
+        return "OK";
     }
 
     @VisibleForTesting
@@ -249,6 +244,7 @@ public class ReservationController {
     @Data
     @AllArgsConstructor
     public static class Reservations {
+        private final String customerUUID;
         private final String date;
         private final List<String> times;
         private final String name;
