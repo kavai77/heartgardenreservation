@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -13,55 +13,57 @@
 <div class="container">
   <form id="reservationForm" action="/reserve" method="post" novalidate>
       <div class="form-group">
-        <label for="nameInput">Name</label>
+        <label for="nameInput" th:text="#{name}">Name</label>
         <input type="text" class="form-control" id="nameInput" name="nameInput" required>
-          <div class="invalid-feedback">
+          <div class="invalid-feedback" th:text="#{name.error}">
               Please enter your name
           </div>
       </div>
       <div class="form-group">
-          <label for="emailInput">Email</label>
+          <label for="emailInput" th:text="#{email}">Email</label>
           <input type="email" class="form-control" id="emailInput"  name="emailInput" aria-describedby="emailHelp" required >
-          <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-          <div class="invalid-feedback">
+          <small id="emailHelp" class="form-text text-muted" th:text="#{email.help}">We'll never share your email with anyone else.</small>
+          <div class="invalid-feedback" th:text="#{email.error}">
               Please enter a valid email address
           </div>
       </div>
       <div class="form-group">
-            <label for="dateInput">Date</label>
+            <label for="dateInput" th:text="#{date}">Date</label>
             <select id="dateInput" name="dateInput" class="form-control" required>
-            <div class="invalid-feedback">
+            <div class="invalid-feedback" th:text="#{date.error}">
                 Please select the date of your reservation
             </div>
         </select>
       </div>
       <div class="form-group">
-          <label for="timeInput">Time</label>
+          <label for="timeInput" th:text="#{time}">Time</label>
           <select id="timeInput" name="timeInput" class="form-control" required>
           </select>
-          <div class="invalid-feedback">
+          <div class="invalid-feedback" th:text="#{time.error}">
               Please select the starting time of your reservation
           </div>
+          <span style="display: none" id="today" th:text="#{today}">Today</span>
+          <span style="display: none" id="tomorrow" th:text="#{tomorrow}">Tomorrow</span>
       </div>
       <div class="form-group">
-          <label for="nbOfGuests">Number of Guests</label>
+          <label for="nbOfGuests" th:text="#{nbOfGuests}">Number of Guests</label>
           <select id="nbOfGuests" name="nbOfGuests" class="form-control" required>
           </select>
-          <div class="invalid-feedback">
+          <div class="invalid-feedback" th:text="#{nbOfGuests.error}">
               Please select the number of guests.
           </div>
       </div>
       <div class="form-group form-check">
           <input type="checkbox" class="form-check-input" id="healthyCheck" required>
-          <label class="form-check-label" for="healthyCheck">I confirm that I do not have any symptoms of illness, like coughing, fever or shortness of breath.</label>
-          <div class="invalid-feedback">
+          <label class="form-check-label" for="healthyCheck" th:text="#{health}">I confirm that I do not have any symptoms of illness, like coughing, fever or shortness of breath.</label>
+          <div class="invalid-feedback" th:text="#{health.error}">
               We cannot serve you if you have these symptoms of illness.
           </div>
       </div>
       <div class="form-group">
           <div id="recaptcha" class="g-recaptcha" data-sitekey="6LfQKPUUAAAAAL6jh1fVbWmX02XahEN7blhmmAU3"></div>
       </div>
-      <button id="submit" type="submit" class="btn btn-primary">Reserve</button>
+      <button id="submit" type="submit" class="btn btn-primary" th:text="#{reserve}">Reserve</button>
   </form>
 </div>
 

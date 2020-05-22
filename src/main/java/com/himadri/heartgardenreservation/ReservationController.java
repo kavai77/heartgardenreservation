@@ -9,7 +9,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +44,9 @@ public class ReservationController {
     private final int maxReservationPerSlots;
     private final int maxBookAheadDays;
     private final TimeZone timezone;
+
+    @Autowired
+    private MessageSource messageSource;
 
     public ReservationController(
         @Value("${restaurant.closed}") List<Integer> closed,
@@ -86,16 +92,16 @@ public class ReservationController {
                 .map(it -> ofy().load().type(Reservation.class).filter("dateTime", it).count())
                 .anyMatch(it -> it >= maxReservationPerSlots);
             if (anyMaxSlotViolation) {
-                model.addAttribute("message", "Unfortunately, we don't have any more free tables at this time. Please try again with another time.");
+                model.addAttribute("message", messageSource.getMessage("reservation.fullybooked", null, LocaleContextHolder.getLocale()));
                 return "messagePage";
             }
 
             slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, customerKey)));
 
-            model.addAttribute("message", "Thank you for your reservation! We are looking forward to see you at Heart-Garden Wicked Waffles.");
+            model.addAttribute("message", messageSource.getMessage("reservation.success", null, LocaleContextHolder.getLocale()));
             return "messagePage";
         } catch (Exception e) {
-            model.addAttribute("message", "Error during reservation. Please try again.");
+            model.addAttribute("message", messageSource.getMessage("reservation.generalerror", null, LocaleContextHolder.getLocale()));
             return "messagePage";
         }
     }

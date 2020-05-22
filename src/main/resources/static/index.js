@@ -15,6 +15,11 @@ var elementsToDisableIfNoSlots = ["#timeInput", "#submit", "#nbOfGuest"]
 var slots;
 
 function fillDates() {
+    let searchParams = new URLSearchParams(window.location.search)
+    let lang = searchParams.get('lang')
+    if (lang === null) {
+        lang = "en";
+    }
     let dateInput = $('#dateInput');
     const now = new Date();
     const today = now.toISOString().substring(0, 10);
@@ -23,12 +28,12 @@ function fillDates() {
     for (i = 0; i < slots.length; i++) {
         let value
         if (slots[i].date === today) {
-            value = "Today";
+            value = $("#today").text();
         } else if (slots[i].date === tomorrow) {
-            value = "Tomorrow"
+            value = $("#tomorrow").text();
         } else {
             const date = new Date(slots[i].date);
-            value = date.toLocaleString('en-us', { month: 'long', weekday: 'long', day: 'numeric' });
+            value = date.toLocaleString(lang, { month: 'long', weekday: 'long', day: 'numeric' });
         }
         dateInput.append($("<option></option>").attr("value", slots[i].date).text(value));
     }
