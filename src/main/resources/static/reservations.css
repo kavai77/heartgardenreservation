@@ -1,14 +1,11 @@
 .container {
-  max-width: 500px;
-  padding: 0;
-  margin: 0;
   background-color: white;
   opacity:0.9;
+  min-height: 100vh;
 }
 
-.body {
+body {
   background-image: url("maxresdefault.jpg");
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: center;
 }

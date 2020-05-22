@@ -1,0 +1,12 @@
+spring:
+  thymeleaf:
+    prefix: classpath:/static/
+restaurant:
+  closed: 2 # comma separated values, 1 - Sunday, 2 - Monday, ..., 7 - Saturday
+  openHour: 9
+  closeHour: 16
+  slotInMinutes: 30
+  slotsForReservation: 2
+  maxReservationPerSlots: 3
+  maxBookAheadDays: 7
+  timezone: Europe/Amsterdam
