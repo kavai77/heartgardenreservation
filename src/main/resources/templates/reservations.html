@@ -12,36 +12,39 @@
 <body>
 <div class="container">
   <div class="row">
-    <div class="col">
+    <div class="col" style="text-align: center">
       <h1>Reservations</h1>
-    </div>
-    <div class="col align-self-end" style="text-align: right">
       <h3 id="date"></h3>
     </div>
   </div>
 
-  <table class="table">
-    <thead>
-    <tr>
-      <th scope="col">Date</th>
-      <th scope="col">Timeslots</th>
-      <th scope="col">Name</th>
-      <th scope="col">Email</th>
-      <th scope="col">Nb of guests</th>
-      <th scope="col">Registered</th>
-      <th scope="col">Action</th>
-    </tr>
-    </thead>
-    <tbody id="tbody">
-    </tbody>
-  </table>
-  <div class="row">
-    <div class="col" style="text-align: right">
-        <a href="#" id="prevLink">Previous day</a>
+  <div id="mainContent" style="display: none">
+    <table class="table">
+      <thead>
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col">Timeslots</th>
+        <th scope="col">Name</th>
+        <th scope="col">Email</th>
+        <th scope="col">Nb of guests</th>
+        <th scope="col">Registered</th>
+        <th scope="col">Action</th>
+      </tr>
+      </thead>
+      <tbody id="tbody">
+      </tbody>
+    </table>
+    <div class="row">
+      <div class="col" style="text-align: right">
+          <button type="button" class="btn btn-info" id="prevLink">Previous day</button>
+      </div>
+      <div class="col">
+        <button type="button" class="btn btn-info" id="nextLink">Next day</button>
+      </div>
     </div>
-    <div class="col">
-        <a href="#" id="nextLink">Next day</a>
-    </div>
+  </div>
+  <div id="spinner" style="text-align: center">
+    <img src="/Spinner-1s-200px.gif">
   </div>
 </div>
 

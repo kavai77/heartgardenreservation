@@ -75,6 +75,7 @@ function onSubmit() {
     let form = $("#reservationForm");
     form.addClass('was-validated');
     if (form[0].checkValidity()) {
+        $('#submitButton').attr("disabled", true)
         form.submit();
     }
 }
