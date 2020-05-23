@@ -1,20 +1,15 @@
 $( document ).ready(function() {
     $.get({
         url: "/slots",
-        success: function (data) {
-            slots = data;
-            fillDates();
-            fillTimes();
+        success: function (slots) {
+            fillDates(slots);
+            fillTimes(slots);
         }
     });
     fillNbOfGuest();
-    setupFormUpdate();
 });
 
-var elementsToDisableIfNoSlots = ["#timeInput", "#submit", "#nbOfGuest"]
-var slots;
-
-function fillDates() {
+function fillDates(slots) {
     let searchParams = new URLSearchParams(window.location.search)
     let lang = searchParams.get('lang')
     if (lang === null) {
@@ -25,7 +20,7 @@ function fillDates() {
     const today = now.toISOString().substring(0, 10);
     now.setDate(now.getDate() + 1);
     const tomorrow = now.toISOString().substring(0, 10);
-    for (i = 0; i < slots.length; i++) {
+    for (let i = 0; i < slots.length; i++) {
         let value
         if (slots[i].date === today) {
             value = $("#today").text();
@@ -38,30 +33,31 @@ function fillDates() {
         dateInput.append($("<option></option>").attr("value", slots[i].date).text(value));
     }
 
-    dateInput.on('change', fillTimes)
+    dateInput.on('change', function () { fillTimes(slots); })
 }
 
-function fillTimes() {
+function fillTimes(slots) {
     const timeInput = $('#timeInput');
     timeInput.empty();
-    const selectedSlot = findSelectedDate();
-    for (i = 0; i < selectedSlot.slotTimes.length; i++) {
+    const selectedSlot = findSelectedDate(slots);
+    for (let i = 0; i < selectedSlot.slotTimes.length; i++) {
         const time = selectedSlot.slotTimes[i].time;
         const enabled = selectedSlot.slotTimes[i].free;
         timeInput.append($("<option></option>").attr("value", time).attr("disabled", !enabled).text(time));
     }
     const isOptionEmpty = selectedSlot.slotTimes.length === 0
     if (isOptionEmpty) {
-        timeInput.append($("<option></option>").text("No available times today"));
+        timeInput.append($("<option></option>").text($("#noavailabletimetoday").text()));
     }
+    const elementsToDisableIfNoSlots = ["#timeInput", "#submitButton", "#nbOfGuest"];
     elementsToDisableIfNoSlots.forEach(function(item) {
         $(item).prop('disabled', isOptionEmpty);
     });
 }
 
-function findSelectedDate() {
+function findSelectedDate(slots) {
     const selectedDate = $("#dateInput").find("option:selected").val();
-    for (i = 0; i < slots.length; i++) {
+    for (let i = 0; i < slots.length; i++) {
         if (slots[i].date === selectedDate) {
             return slots[i];
         }
@@ -70,14 +66,15 @@ function findSelectedDate() {
 }
 
 function fillNbOfGuest() {
-    for (i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 4; i++) {
         $('#nbOfGuests').append($("<option></option>").attr("value", i).text(i));
     }
 }
 
-function setupFormUpdate() {
-    $("#reservationForm").submit(function(e) {
-        $(this).addClass('was-validated');
-        return $(this)[0].checkValidity()
-    });
+function onSubmit() {
+    let form = $("#reservationForm");
+    form.addClass('was-validated');
+    if (form[0].checkValidity()) {
+        form.submit();
+    }
 }

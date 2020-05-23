@@ -2,9 +2,6 @@ package com.himadri.heartgardenreservation;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Collections;
 
@@ -18,11 +15,5 @@ public class Application {
         }
 
         app.run(args);
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/_ah/warmup")
-    @ResponseBody
-    public String warmup() {
-        return "OK";
     }
 }

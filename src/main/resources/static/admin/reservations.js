@@ -11,7 +11,7 @@ $( document ).ready(function() {
     date.setDate(date.getDate() + 2);
     $("#nextLink").prop("href", "?date="+date.toISOString().substring(0, 10));
     $.get({
-        url: "/reservations",
+        url: "/admin/reservations",
         data: {
             fromDate: dateStr,
             toDate: dateStr
@@ -43,7 +43,7 @@ $( document ).ready(function() {
                 let thisButton = $(this);
                 if (window.confirm("Are you sure you want to delete the registration for " + thisButton.data("customerName") + "?")) {
                     $.ajax({
-                        url: "/reservation",
+                        url: "/admin/reservation",
                         method: 'DELETE',
                         data: {
                             customerUUID: thisButton.data("customerUUID")

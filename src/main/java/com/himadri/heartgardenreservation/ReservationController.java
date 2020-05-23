@@ -7,8 +7,6 @@ import com.himadri.heartgardenreservation.entity.Customer;
 import com.himadri.heartgardenreservation.entity.Reservation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -24,17 +22,15 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 import static java.lang.String.format;
 
 @Controller
 public class ReservationController {
-    private static final Log LOGGER = LogFactory.getLog(ReservationController.class);
     static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private static final DateFormat timeFormat = new SimpleDateFormat("HH:mm");
-    private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+    static final DateFormat timeFormat = new SimpleDateFormat("HH:mm");
+    static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
     private final Set<Integer> closed;
     private final int openHour;
@@ -47,6 +43,9 @@ public class ReservationController {
 
     @Autowired
     private MessageSource messageSource;
+
+    @Autowired
+    private ResourceHash resourceHash;
 
     public ReservationController(
         @Value("${restaurant.closed}") List<Integer> closed,
@@ -69,6 +68,21 @@ public class ReservationController {
         dateFormat.setTimeZone(this.timezone);
         timeFormat.setTimeZone(this.timezone);
         dateTimeFormat.setTimeZone(this.timezone);
+    }
+
+
+    @RequestMapping(value = "/")
+    public String index(Model model) {
+        model.addAttribute("indexjshash", resourceHash.getResourceHash(ResourceHash.Resource.INDEX_JS));
+        model.addAttribute("indexcsshash", resourceHash.getResourceHash(ResourceHash.Resource.INDEX_CSS));
+        return "index";
+    }
+
+
+    @RequestMapping(method = RequestMethod.GET, value = "/_ah/warmup")
+    @ResponseBody
+    public String warmup() {
+        return "OK";
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/reserve")
@@ -115,49 +129,6 @@ public class ReservationController {
         return getSlotDateAndTimes(reservationCount);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/reservations")
-    @ResponseBody
-    public Collection<Reservations> reservations(
-        @RequestParam String fromDate,
-        @RequestParam String toDate
-    ) throws ParseException {
-        List<Reservation> reservations = ofy().load().type(Reservation.class)
-            .filter("dateTime >=", dateFormat.parse(fromDate).getTime())
-            .filter("dateTime <",dateFormat.parse(toDate).getTime() + 1000 * 60 * 60 * 24)
-            .list();
-        Set<String> keySet = reservations.stream()
-            .map(it -> it.getCustomerKey().getName())
-            .collect(Collectors.toSet());
-        Map<String, Customer> customers = ofy().load().type(Customer.class).ids(keySet);
-        var customerReservation = new LinkedHashMap<String, Reservations>();
-        for (var reservation: reservations) {
-            var customer = customers.get(reservation.getCustomerKey().getName());
-            if (customer != null) {
-                Reservations res = customerReservation.computeIfAbsent(customer.getId(), k -> new Reservations(
-                    customer.getId(),
-                    dateFormat.format(new Date(reservation.getDateTime())),
-                    new ArrayList<>(),
-                    customer.getName(),
-                    customer.getEmail(),
-                    customer.getNbOfGuests(),
-                    dateTimeFormat.format(new Date(customer.getRegistered()))
-                ));
-
-                res.getTimes().add(timeFormat.format(new Date(reservation.getDateTime())));
-            }
-        }
-        return customerReservation.values();
-    }
-
-    @RequestMapping(method = RequestMethod.DELETE, value = "/reservation")
-    @ResponseBody
-    public String deleteReservation(@RequestParam String customerUUID) {
-        Key<Customer> customerKey = Key.create(Customer.class, customerUUID);
-        List<Reservation> reservationList = ofy().load().type(Reservation.class).filter("customerKey", customerKey).list();
-        ofy().delete().entities(reservationList);
-        ofy().delete().key(customerKey);
-        return "OK";
-    }
 
     @VisibleForTesting
     List<Slots> getSlotDateAndTimes(Map<Long, Integer> reservationCount) throws ParseException {
