@@ -127,9 +127,7 @@ public class ReservationController {
                 .map(it -> ofy().load().type(Reservation.class).filter("dateTime", it).count())
                 .anyMatch(it -> it >= restaurantConfiguration.getRestaurantCapacity());
             if (anyMaxSlotViolation) {
-                model.addAttribute("title", getMessage("reservation.fullybooked.title"));
-                model.addAttribute("body", getMessage("reservation.fullybooked.body"));
-                return "message";
+                return messagePage(model, "reservation.fullybooked.title", "reservation.fullybooked.body");
             }
 
             slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, customerKey)));
@@ -140,19 +138,13 @@ public class ReservationController {
                 LOGGER.error("Sendgrid exception", e);
             }
 
-            model.addAttribute("title", getMessage("reservation.success.title"));
-            model.addAttribute("body", getMessage("reservation.success.body"));
-            return "message";
+            return messagePage(model, "reservation.success.title", "reservation.success.body");
         } catch (RecaptchaException e) {
             LOGGER.info("Recaptcha verification failed {}", e.getRecaptchaResponse());
-            model.addAttribute("title", getMessage("reservation.generalerror.title"));
-            model.addAttribute("body", getMessage("reservation.recatchaerror"));
-            return "message";
+            return messagePage(model, "reservation.generalerror.title", "reservation.recatchaerror");
         } catch (Exception e) {
             LOGGER.error("Error", e);
-            model.addAttribute("title", getMessage("reservation.generalerror.title"));
-            model.addAttribute("body", getMessage("reservation.generalerror.body"));
-            return "message";
+            return messagePage(model, "reservation.generalerror.title", "reservation.generalerror.body");
         }
     }
 
@@ -165,6 +157,14 @@ public class ReservationController {
         return getSlotDateAndTimes(reservationCount);
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = "/cancel")
+    public String cancelReservation(@RequestParam String customerUUID, Model model) {
+        Key<Customer> customerKey = Key.create(Customer.class, customerUUID);
+        List<Reservation> reservationList = ofy().load().type(Reservation.class).filter("customerKey", customerKey).list();
+        ofy().delete().entities(reservationList);
+        ofy().delete().key(customerKey);
+        return messagePage(model, "reservation.cancellation.title", "reservation.cancellation.body");
+    }
 
     @VisibleForTesting
     List<Slots> getSlotDateAndTimes(Map<Long, Integer> reservationCount) throws ParseException {
@@ -297,6 +297,12 @@ public class ReservationController {
         } catch (IOException | RuntimeException e) {
             throw new SendGridException(e);
         }
+    }
+
+    private String messagePage(Model model, String titleKey, String bodyKey) {
+        model.addAttribute("title", getMessage(titleKey));
+        model.addAttribute("body", getMessage(bodyKey));
+        return "message";
     }
 
     private String getMessage(String key, Object... params) {
