@@ -39,6 +39,9 @@ public class RestaurantConfiguration {
     @Value("${restaurant.timezone}")
     private String timezone;
 
+    @Value("${restaurant.fromemail}")
+    private String fromEmail;
+
     @Value("${restaurant.maxGuestInForm}")
     private int maxGuestInForm;
 

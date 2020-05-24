@@ -6,6 +6,13 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.himadri.heartgardenreservation.entity.Customer;
 import com.himadri.heartgardenreservation.entity.Reservation;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Personalization;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -29,6 +36,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -68,6 +76,9 @@ public class ReservationController {
     @Value("${recaptchasecret}")
     private String recaptchaSecret;
 
+    @Value("${sendgridapikey}")
+    private String sendgridApiKey;
+
     public ReservationController(RestaurantConfiguration restaurantConfiguration) {
         this.restaurantConfiguration = restaurantConfiguration;
 
@@ -86,7 +97,6 @@ public class ReservationController {
         model.addAttribute("oneHouseHoldLimitInForm", restaurantConfiguration.getOneHouseHoldLimitInForm());
         return "index";
     }
-
 
     @RequestMapping(method = RequestMethod.GET, value = "/_ah/warmup")
     @ResponseBody
@@ -117,25 +127,31 @@ public class ReservationController {
                 .map(it -> ofy().load().type(Reservation.class).filter("dateTime", it).count())
                 .anyMatch(it -> it >= restaurantConfiguration.getRestaurantCapacity());
             if (anyMaxSlotViolation) {
-                model.addAttribute("title", messageSource.getMessage("reservation.fullybooked.title", null, LocaleContextHolder.getLocale()));
-                model.addAttribute("body", messageSource.getMessage("reservation.fullybooked.body", null, LocaleContextHolder.getLocale()));
+                model.addAttribute("title", getMessage("reservation.fullybooked.title"));
+                model.addAttribute("body", getMessage("reservation.fullybooked.body"));
                 return "message";
             }
 
             slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, customerKey)));
 
-            model.addAttribute("title", messageSource.getMessage("reservation.success.title", null, LocaleContextHolder.getLocale()));
-            model.addAttribute("body", messageSource.getMessage("reservation.success.body", null, LocaleContextHolder.getLocale()));
+            try {
+                sendConfirmationEmail(customer, slots.get(0));
+            } catch (SendGridException e) {
+                LOGGER.error("Sendgrid exception", e);
+            }
+
+            model.addAttribute("title", getMessage("reservation.success.title"));
+            model.addAttribute("body", getMessage("reservation.success.body"));
             return "message";
         } catch (RecaptchaException e) {
             LOGGER.info("Recaptcha verification failed {}", e.getRecaptchaResponse());
-            model.addAttribute("title", messageSource.getMessage("reservation.generalerror.title", null, LocaleContextHolder.getLocale()));
-            model.addAttribute("body", messageSource.getMessage("reservation.recatchaerror",null, LocaleContextHolder.getLocale()));
+            model.addAttribute("title", getMessage("reservation.generalerror.title"));
+            model.addAttribute("body", getMessage("reservation.recatchaerror"));
             return "message";
         } catch (Exception e) {
             LOGGER.error("Error", e);
-            model.addAttribute("title", messageSource.getMessage("reservation.generalerror.title", null, LocaleContextHolder.getLocale()));
-            model.addAttribute("body", messageSource.getMessage("reservation.generalerror.body", null, LocaleContextHolder.getLocale()));
+            model.addAttribute("title", getMessage("reservation.generalerror.title"));
+            model.addAttribute("body", getMessage("reservation.generalerror.body"));
             return "message";
         }
     }
@@ -249,6 +265,44 @@ public class ReservationController {
         }
     }
 
+    private void sendConfirmationEmail(Customer customer, Long firstSlot) throws SendGridException {
+        try {
+            DateFormat localDateFormat = SimpleDateFormat.getDateInstance(DateFormat.FULL, LocaleContextHolder.getLocale());
+            Email from = new Email(restaurantConfiguration.getFromEmail());
+            Email to = new Email(customer.getEmail());
+            Mail mail = new Mail();
+            mail.setFrom(from);
+            Personalization personalization = new Personalization();
+            personalization.addTo(to);
+            personalization.addDynamicTemplateData("name", customer.getName());
+            personalization.addDynamicTemplateData("guests", customer.getNbOfGuests() == 1 ? getMessage("oneguest") : getMessage("moreguests", customer.getNbOfGuests()));
+            personalization.addDynamicTemplateData("date", localDateFormat.format(new Date(firstSlot)));
+            personalization.addDynamicTemplateData("time", timeFormat.format(new Date(firstSlot)));
+            UriComponentsBuilder cancellationLinkBuilder = UriComponentsBuilder
+                .fromHttpUrl("https://heartgardenreservation.appspot.com/cancel")
+                .queryParam("customerUUID", customer.getId());
+            personalization.addDynamicTemplateData("cancellationlink", cancellationLinkBuilder.build().toUriString());
+            mail.addPersonalization(personalization);
+            mail.setTemplateId(getMessage("confirmationemail"));
+
+            SendGrid sg = new SendGrid(sendgridApiKey);
+            Request request = new Request();
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+            if (!HttpStatus.valueOf(response.getStatusCode()).is2xxSuccessful()) {
+                throw new SendGridException(response.getStatusCode(), response.getBody());
+            }
+        } catch (IOException | RuntimeException e) {
+            throw new SendGridException(e);
+        }
+    }
+
+    private String getMessage(String key, Object... params) {
+        return messageSource.getMessage(key, params, LocaleContextHolder.getLocale());
+    }
+
     @Data
     public static class Slots {
         private final String date;
@@ -288,5 +342,16 @@ public class ReservationController {
     @RequiredArgsConstructor
     private static class RecaptchaException extends Exception {
         private final RecaptchaResponse recaptchaResponse;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    private static class SendGridException extends Exception {
+        private int httpStatusCode;
+        private String httpBody;
+
+        public SendGridException(Throwable cause) {
+            super(cause);
+        }
     }
 }
