@@ -74,11 +74,25 @@
               data-action='submit'
               data-sitekey="6Lf8RfsUAAAAABCf34ZYzWpg_zv61NUtIOZRL2fV" th:text="#{reserve}">Reserve</button>
   </form>
+
   <span style="display: none" id="maxGuestInForm" th:text="${maxGuestInForm}">2</span>
   <span style="display: none" id="oneHouseHoldLimitInForm" th:text="${oneHouseHoldLimitInForm}">8</span>
 
 </div>
-
+<div class="modal fade" tabindex="-1" role="dialog" id="spinnerModal" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel" th:text="#{reserve.inprogress}">Reservation in progress...</h5>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center">
+                    <img src="Spinner-1s-200px.gif">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script><script src="https://www.google.com/recaptcha/api.js" async defer></script>

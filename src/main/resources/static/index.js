@@ -7,6 +7,7 @@ $( document ).ready(function() {
         }
     });
     fillNbOfGuest();
+    $('#spinnerModal').modal({backdrop: 'static', keyboard: false, show: false});
 });
 
 function fillDates(slots) {
@@ -93,7 +94,7 @@ function onSubmit() {
     let form = $("#reservationForm");
     form.addClass('was-validated');
     if (form[0].checkValidity()) {
-        $('#submitButton').attr("disabled", true)
+        $('#spinnerModal').modal('show');
         form.submit();
     }
 }
