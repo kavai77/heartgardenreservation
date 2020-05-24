@@ -38,4 +38,10 @@ public class RestaurantConfiguration {
 
     @Value("${restaurant.timezone}")
     private String timezone;
+
+    @Value("${restaurant.maxGuestInForm}")
+    private int maxGuestInForm;
+
+    @Value("${restaurant.oneHouseHoldLimitInForm}")
+    private int oneHouseHoldLimitInForm;
 }

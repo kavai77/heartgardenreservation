@@ -82,6 +82,8 @@ public class ReservationController {
     public String index(Model model) {
         model.addAttribute("indexjshash", resourceHash.getResourceHash(ResourceHash.Resource.INDEX_JS));
         model.addAttribute("indexcsshash", resourceHash.getResourceHash(ResourceHash.Resource.INDEX_CSS));
+        model.addAttribute("maxGuestInForm", restaurantConfiguration.getMaxGuestInForm());
+        model.addAttribute("oneHouseHoldLimitInForm", restaurantConfiguration.getOneHouseHoldLimitInForm());
         return "index";
     }
 
@@ -117,23 +119,24 @@ public class ReservationController {
             if (anyMaxSlotViolation) {
                 model.addAttribute("title", messageSource.getMessage("reservation.fullybooked.title", null, LocaleContextHolder.getLocale()));
                 model.addAttribute("body", messageSource.getMessage("reservation.fullybooked.body", null, LocaleContextHolder.getLocale()));
-                return "messagePage";
+                return "message";
             }
 
             slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, customerKey)));
 
             model.addAttribute("title", messageSource.getMessage("reservation.success.title", null, LocaleContextHolder.getLocale()));
             model.addAttribute("body", messageSource.getMessage("reservation.success.body", null, LocaleContextHolder.getLocale()));
-            return "messagePage";
+            return "message";
         } catch (RecaptchaException e) {
             LOGGER.info("Recaptcha verification failed {}", e.getRecaptchaResponse());
             model.addAttribute("title", messageSource.getMessage("reservation.generalerror.title", null, LocaleContextHolder.getLocale()));
             model.addAttribute("body", messageSource.getMessage("reservation.recatchaerror",null, LocaleContextHolder.getLocale()));
-            return "messagePage";
+            return "message";
         } catch (Exception e) {
+            LOGGER.error("Error", e);
             model.addAttribute("title", messageSource.getMessage("reservation.generalerror.title", null, LocaleContextHolder.getLocale()));
             model.addAttribute("body", messageSource.getMessage("reservation.generalerror.body", null, LocaleContextHolder.getLocale()));
-            return "messagePage";
+            return "message";
         }
     }
 

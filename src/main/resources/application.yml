@@ -10,3 +10,5 @@ restaurant:
   maxBookAheadDays: 7
   timezone: Europe/Amsterdam
   fromemail: heartgardenreservations@sendgrid.hidemyemail.online
+  maxGuestInForm: 8
+  oneHouseHoldLimitInForm: 2

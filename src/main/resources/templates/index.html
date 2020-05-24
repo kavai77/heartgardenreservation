@@ -53,6 +53,7 @@
           <div class="invalid-feedback" th:text="#{nbOfGuests.error}">
               Please select the number of guests.
           </div>
+          <span style="display: none" id="oneHouseholdOnlyInfo" th:text="#{oneHouseholdOnlyInfo}">(from one household only)</span>
       </div>
       <div class="form-group form-check">
           <input type="checkbox" class="form-check-input" id="healthyCheck" required>
@@ -61,11 +62,21 @@
               We cannot serve you if you have these symptoms of illness.
           </div>
       </div>
+      <div class="form-group form-check" style="display: none" id="familyCheckGroup">
+          <input type="checkbox" class="form-check-input" id="familyCheck">
+          <label class="form-check-label" for="familyCheck" th:text="#{family}">I confirm that we belong to the same household.</label>
+          <div class="invalid-feedback" th:text="#{family.error}">
+              According to the Dutch regulations, groups over two people are allowed only if they belong to the same household.
+          </div>
+      </div>
       <button id="submitButton" class="btn btn-primary g-recaptcha"
               data-callback='onSubmit'
               data-action='submit'
               data-sitekey="6Lf8RfsUAAAAABCf34ZYzWpg_zv61NUtIOZRL2fV" th:text="#{reserve}">Reserve</button>
   </form>
+  <span style="display: none" id="maxGuestInForm" th:text="${maxGuestInForm}">2</span>
+  <span style="display: none" id="oneHouseHoldLimitInForm" th:text="${oneHouseHoldLimitInForm}">8</span>
+
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

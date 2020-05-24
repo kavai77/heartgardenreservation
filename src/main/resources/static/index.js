@@ -33,7 +33,7 @@ function fillDates(slots) {
         dateInput.append($("<option></option>").attr("value", slots[i].date).text(value));
     }
 
-    dateInput.on('change', function () { fillTimes(slots); })
+    dateInput.change(function () { fillTimes(slots); })
 }
 
 function fillTimes(slots) {
@@ -66,9 +66,27 @@ function findSelectedDate(slots) {
 }
 
 function fillNbOfGuest() {
-    for (let i = 1; i <= 4; i++) {
-        $('#nbOfGuests').append($("<option></option>").attr("value", i).text(i));
+    let nbOfGuests = $('#nbOfGuests');
+    const oneHouseholdOnlyInfo = $("#oneHouseholdOnlyInfo").text();
+    const maxGuestInForm = parseInt($("#maxGuestInForm").text());
+    const oneHouseHoldLimitInForm = parseInt($("#oneHouseHoldLimitInForm").text());
+    for (let i = 1; i <= maxGuestInForm; i++) {
+        let text = i;
+        if (i > oneHouseHoldLimitInForm) {
+           text += " " + oneHouseholdOnlyInfo;
+        }
+        nbOfGuests.append($("<option></option>").attr("value", i).text(text));
     }
+    nbOfGuests.change(function () {
+        const guests = parseInt(nbOfGuests.find("option:selected").val());
+        if (guests > oneHouseHoldLimitInForm) {
+            $('#familyCheckGroup').show();
+            $('#familyCheck').prop('required', true);
+        } else {
+            $('#familyCheckGroup').hide();
+            $('#familyCheck').prop('required', false);
+        }
+    })
 }
 
 function onSubmit() {
