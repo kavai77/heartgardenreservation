@@ -73,6 +73,11 @@
             <artifactId>guava</artifactId>
             <version>29.0-jre</version>
         </dependency>
+        <dependency>
+            <groupId>com.sendgrid</groupId>
+            <artifactId>sendgrid-java</artifactId>
+            <version>4.5.0</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>

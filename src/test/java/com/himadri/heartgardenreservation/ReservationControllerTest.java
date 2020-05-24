@@ -18,20 +18,23 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ReservationControllerTest {
     private static final String TIMEZONE = "Europe/Amsterdam";
+    private RestaurantConfiguration config;
     private ReservationController reservationController;
 
     @BeforeEach
     void init() {
-        reservationController = new ReservationController(
-            ImmutableList.of(2),
-            9,
-            16,
-            30,
-            2,
-            5,
-            2,
-            TIMEZONE
-        );
+        config = new RestaurantConfiguration();
+        config.setClosedDays(ImmutableList.of(2));
+        config.setOpenHour(9);
+        config.setOpenMinute(0);
+        config.setCloseHour(16);
+        config.setCloseMinute(0);
+        config.setSlotInMinutes(30);
+        config.setSlotsPerReservation(2);
+        config.setRestaurantCapacity(5);
+        config.setMaxBookAheadDays(2);
+        config.setTimezone(TIMEZONE);
+        reservationController = new ReservationController(config);
     }
 
     @Test
@@ -69,6 +72,7 @@ public class ReservationControllerTest {
 
     @Test
     void getSlotDateAndTimes() throws Exception {
+        config.setClosedDays(List.of());
         Map<Long, Integer> reserveMap = new HashMap<>();
         reservation(reserveMap, 9, 0 , 5);
         reservation(reserveMap, 11, 0 , 4);

@@ -1,9 +1,12 @@
 restaurant:
-  closed: 2 # comma separated values, 1 - Sunday, 2 - Monday, ..., 7 - Saturday
+  closedDays: 2 # comma separated values, 1 - Sunday, 2 - Monday, ..., 7 - Saturday
   openHour: 9
+  openMinute: 0
   closeHour: 16
+  closeMinute: 30
   slotInMinutes: 30
-  slotsForReservation: 2
-  maxReservationPerSlots: 3
+  slotsPerReservation: 2
+  restaurantCapacity: 3
   maxBookAheadDays: 7
   timezone: Europe/Amsterdam
+  fromemail: heartgardenreservations@sendgrid.hidemyemail.online

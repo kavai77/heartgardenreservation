@@ -32,7 +32,15 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 import static java.lang.String.format;
@@ -45,13 +53,7 @@ public class ReservationController {
     static final DateFormat timeFormat = new SimpleDateFormat("HH:mm");
     static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
-    private final Set<Integer> closed;
-    private final int openHour;
-    private final int closeHour;
-    private final int slotInMinutes;
-    private final int slotsForReservation;
-    private final int maxReservationPerSlots;
-    private final int maxBookAheadDays;
+    private final RestaurantConfiguration restaurantConfiguration;
     private final TimeZone timezone;
 
     @Autowired
@@ -66,24 +68,10 @@ public class ReservationController {
     @Value("${recaptchasecret}")
     private String recaptchaSecret;
 
-    public ReservationController(
-        @Value("${restaurant.closed}") List<Integer> closed,
-        @Value("${restaurant.openHour}") int openHour,
-        @Value("${restaurant.closeHour}") int closeHour,
-        @Value("${restaurant.slotInMinutes}") int slotInMinutes,
-        @Value("${restaurant.slotsForReservation}") int slotsForReservation,
-        @Value("${restaurant.maxReservationPerSlots}") int maxReservationPerSlots,
-        @Value("${restaurant.maxBookAheadDays}") int maxBookAheadDays,
-        @Value("${restaurant.timezone}") String timezone
-    ) {
-        this.closed = new HashSet<>(closed);
-        this.openHour = openHour;
-        this.closeHour = closeHour;
-        this.slotInMinutes = slotInMinutes;
-        this.slotsForReservation = slotsForReservation;
-        this.maxReservationPerSlots = maxReservationPerSlots;
-        this.maxBookAheadDays = maxBookAheadDays;
-        this.timezone = TimeZone.getTimeZone(timezone);
+    public ReservationController(RestaurantConfiguration restaurantConfiguration) {
+        this.restaurantConfiguration = restaurantConfiguration;
+
+        this.timezone = TimeZone.getTimeZone(restaurantConfiguration.getTimezone());
         dateFormat.setTimeZone(this.timezone);
         timeFormat.setTimeZone(this.timezone);
         dateTimeFormat.setTimeZone(this.timezone);
@@ -125,23 +113,26 @@ public class ReservationController {
 
             boolean anyMaxSlotViolation = slots.stream()
                 .map(it -> ofy().load().type(Reservation.class).filter("dateTime", it).count())
-                .anyMatch(it -> it >= maxReservationPerSlots);
+                .anyMatch(it -> it >= restaurantConfiguration.getRestaurantCapacity());
             if (anyMaxSlotViolation) {
-                model.addAttribute("message", messageSource.getMessage("reservation.fullybooked", null, LocaleContextHolder.getLocale()));
+                model.addAttribute("title", messageSource.getMessage("reservation.fullybooked.title", null, LocaleContextHolder.getLocale()));
+                model.addAttribute("body", messageSource.getMessage("reservation.fullybooked.body", null, LocaleContextHolder.getLocale()));
                 return "messagePage";
             }
 
             slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, customerKey)));
 
-            model.addAttribute("message", messageSource.getMessage("reservation.success", null, LocaleContextHolder.getLocale()));
+            model.addAttribute("title", messageSource.getMessage("reservation.success.title", null, LocaleContextHolder.getLocale()));
+            model.addAttribute("body", messageSource.getMessage("reservation.success.body", null, LocaleContextHolder.getLocale()));
             return "messagePage";
         } catch (RecaptchaException e) {
             LOGGER.info("Recaptcha verification failed {}", e.getRecaptchaResponse());
-            model.addAttribute("message", messageSource.getMessage("reservation.recatchaerror",
-                null, LocaleContextHolder.getLocale()));
+            model.addAttribute("title", messageSource.getMessage("reservation.generalerror.title", null, LocaleContextHolder.getLocale()));
+            model.addAttribute("body", messageSource.getMessage("reservation.recatchaerror",null, LocaleContextHolder.getLocale()));
             return "messagePage";
         } catch (Exception e) {
-            model.addAttribute("message", messageSource.getMessage("reservation.generalerror", null, LocaleContextHolder.getLocale()));
+            model.addAttribute("title", messageSource.getMessage("reservation.generalerror.title", null, LocaleContextHolder.getLocale()));
+            model.addAttribute("body", messageSource.getMessage("reservation.generalerror.body", null, LocaleContextHolder.getLocale()));
             return "messagePage";
         }
     }
@@ -160,17 +151,17 @@ public class ReservationController {
     List<Slots> getSlotDateAndTimes(Map<Long, Integer> reservationCount) throws ParseException {
         Calendar date = Calendar.getInstance(timezone);
         var slots = new ArrayList<Slots>();
-        for (int i = 0; i <= maxBookAheadDays; i++) {
+        for (int i = 0; i <= restaurantConfiguration.getMaxBookAheadDays(); i++) {
             String day = dateFormat.format(date.getTime());
             List<Long> slotsForDay = getSlotsForDay(day);
             if (!slotsForDay.isEmpty()) {
                 List<SlotTimes> slotTimes = new ArrayList<>();
                 slots.add(new Slots(day, slotTimes));
                 for (Long slot : slotsForDay) {
-                    boolean free = reservationCount.getOrDefault(slot, 0) < maxReservationPerSlots;
+                    boolean free = reservationCount.getOrDefault(slot, 0) < restaurantConfiguration.getRestaurantCapacity();
                     SlotTimes time = new SlotTimes(timeFormat.format(new Date(slot)), free);
                     if (!free) {
-                        for (int j = slotTimes.size() - 1; j >= Math.max(slotTimes.size() - slotsForReservation + 1, 0); j--) {
+                        for (int j = slotTimes.size() - 1; j >= Math.max(slotTimes.size() - restaurantConfiguration.getSlotsPerReservation() + 1, 0); j--) {
                             slotTimes.get(j).setFree(false);
                         }
                     }
@@ -205,7 +196,7 @@ public class ReservationController {
             }
         }
         var list = Lists.newArrayList(slotsForDay.get(index));
-        for (int i = index + 1; i < Math.min(index + slotsForReservation, slotsForDay.size()); i++) {
+        for (int i = index + 1; i < Math.min(index + restaurantConfiguration.getSlotsPerReservation(), slotsForDay.size()); i++) {
             list.add(slotsForDay.get(i));
         }
         return list;
@@ -215,18 +206,23 @@ public class ReservationController {
     List<Long> getSlotsForDay(String dateInput) throws ParseException {
         Calendar date = Calendar.getInstance(timezone);
         date.setTime(dateFormat.parse(dateInput));
-        if (closed.contains(date.get(Calendar.DAY_OF_WEEK))) {
+        if (restaurantConfiguration.getClosedDays().contains(date.get(Calendar.DAY_OF_WEEK))) {
             return Collections.emptyList();
         }
 
-        date.set(Calendar.HOUR_OF_DAY, openHour);
-        date.set(Calendar.MINUTE, 0);
+        Calendar closeTime = Calendar.getInstance(timezone);
+        closeTime.setTime(dateFormat.parse(dateInput));
+        closeTime.set(Calendar.HOUR_OF_DAY, restaurantConfiguration.getCloseHour());
+        closeTime.set(Calendar.MINUTE, restaurantConfiguration.getCloseMinute());
+
+        date.set(Calendar.HOUR_OF_DAY, restaurantConfiguration.getOpenHour());
+        date.set(Calendar.MINUTE, restaurantConfiguration.getOpenMinute());
         var list = new ArrayList<Long>();
-        while (date.get(Calendar.HOUR_OF_DAY) < closeHour) {
+        while (date.compareTo(closeTime) < 0) {
             if (date.getTimeInMillis() >= System.currentTimeMillis()) {
                 list.add(date.getTimeInMillis());
             }
-            date.add(Calendar.MINUTE, slotInMinutes);
+            date.add(Calendar.MINUTE, restaurantConfiguration.getSlotInMinutes());
         }
         return list;
     }
