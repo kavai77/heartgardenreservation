@@ -229,6 +229,12 @@ public class ReservationController {
             return Collections.emptyList();
         }
 
+        Calendar goLiveDate = Calendar.getInstance(timezone);
+        goLiveDate.setTime(dateFormat.parse(restaurantConfiguration.getGoLive()));
+        if (date.compareTo(goLiveDate) < 0) {
+            return Collections.emptyList();
+        }
+
         Calendar closeTime = Calendar.getInstance(timezone);
         closeTime.setTime(dateFormat.parse(dateInput));
         closeTime.set(Calendar.HOUR_OF_DAY, restaurantConfiguration.getCloseHour());

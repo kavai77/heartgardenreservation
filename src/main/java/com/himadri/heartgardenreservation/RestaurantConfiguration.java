@@ -47,4 +47,7 @@ public class RestaurantConfiguration {
 
     @Value("${restaurant.oneHouseHoldLimitInForm}")
     private int oneHouseHoldLimitInForm;
+
+    @Value("${restaurant.goLive}")
+    private String goLive;
 }

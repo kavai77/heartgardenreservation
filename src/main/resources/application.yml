@@ -9,6 +9,7 @@ restaurant:
   restaurantCapacity: 8
   maxBookAheadDays: 7
   timezone: Europe/Amsterdam
-  fromemail: heartgardenreservations@sendgrid.hidemyemail.online
+  fromemail: reservations@heart-garden.nl
   maxGuestInForm: 8
   oneHouseHoldLimitInForm: 2
+  goLive: 2020-05-29
