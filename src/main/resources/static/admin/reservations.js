@@ -29,7 +29,7 @@ $( document ).ready(function() {
         date.setDate(date.getDate() + 1);
         changeDate();
     });
-    var firebaseConfig = {
+    const firebaseConfig = {
         apiKey: "AIzaSyAykWP69-EnGlmcbnAJJ8Yy95O7mOcPig0",
         authDomain: "heartgardenreservation.firebaseapp.com",
         databaseURL: "https://heartgardenreservation.firebaseio.com",
@@ -40,6 +40,19 @@ $( document ).ready(function() {
     };
     firebase.initializeApp(firebaseConfig);
     firebase.auth().onAuthStateChanged(authStateObserver);
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings)
+        {
+            firebase.auth().currentUser.getIdToken()
+                .then(function(result) {
+                    $.ajax($.extend(settings, {
+                        headers: {"X-Authorization-Firebase": result},
+                        beforeSend: $.noop
+                    }));
+                });
+            return false;
+        }
+    });
 });
 
 function changeDate() {
