@@ -5,6 +5,7 @@ import com.google.cloud.datastore.DatastoreOptions;
 import com.googlecode.objectify.ObjectifyFactory;
 import com.googlecode.objectify.ObjectifyFilter;
 import com.googlecode.objectify.ObjectifyService;
+import com.himadri.heartgardenreservation.entity.AdminAccess;
 import com.himadri.heartgardenreservation.entity.Customer;
 import com.himadri.heartgardenreservation.entity.Reservation;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -31,25 +32,31 @@ public class ObjectifyConfig {
     }
 
     @Bean
-    public ServletListenerRegistrationBean<ObjectifyListener> listenerRegistrationBean() {
+    public ServletListenerRegistrationBean<ObjectifyListener> listenerRegistrationBean(Application.GoogleCloudRuntime runtime) {
         ServletListenerRegistrationBean<ObjectifyListener> bean =
                 new ServletListenerRegistrationBean<>();
-        bean.setListener(new ObjectifyListener());
+        bean.setListener(new ObjectifyListener(runtime));
         return bean;
     }
 
     @WebListener
     public static class ObjectifyListener implements ServletContextListener {
+        private final Application.GoogleCloudRuntime runtime;
+
+        public ObjectifyListener(Application.GoogleCloudRuntime runtime) {
+
+            this.runtime = runtime;
+        }
+
         @Override
         public void contextInitialized(ServletContextEvent sce) {
-            if (System.getenv("GAE_SERVICE") == null) {
+            if (runtime == Application.GoogleCloudRuntime.LOCAL) {
                 try {
                     ObjectifyService.init(new ObjectifyFactory(
                             DatastoreOptions.newBuilder()
                                     .setHost("localhost:8484")
                                     .setProjectId("my-project")
-                                    .setCredentials(GoogleCredentials.fromStream(new FileInputStream(
-                                        System.getenv("HOME") + "/.config/gcloud/application_default_credentials.json")))
+                                    .setCredentials(GoogleCredentials.fromStream(new FileInputStream(Application.LOCAL_APPLICATION_CREDENTIALS)))
                                     .build()
                                     .getService()
                     ));
@@ -64,6 +71,7 @@ public class ObjectifyConfig {
 
             ObjectifyService.register(Customer.class);
             ObjectifyService.register(Reservation.class);
+            ObjectifyService.register(AdminAccess.class);
         }
 
         @Override
