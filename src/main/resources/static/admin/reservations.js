@@ -1,6 +1,26 @@
 let date = new Date()
 
 $( document ).ready(function() {
+    $("#login")
+        .mouseenter(function() {
+            $( this ).attr("src", "btn_google_signin_dark_pressed_web.png");
+        })
+        .mouseleave(function() {
+            $( this ).attr("src", "btn_google_signin_dark_normal_web.png");
+        })
+        .focusin(function() {
+            $( this ).attr("src", "btn_google_signin_dark_focus_web.png");
+        })
+        .focusout(function() {
+            $( this ).attr("src", "btn_google_signin_dark_normal_web.png");
+        })
+        .click(function () {
+            let provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider);
+        });
+    $("#logout").click(function () {
+        firebase.auth().signOut();
+    });
     $("#prevLink").click(function () {
         date.setDate(date.getDate() - 1);
         changeDate();
@@ -9,7 +29,17 @@ $( document ).ready(function() {
         date.setDate(date.getDate() + 1);
         changeDate();
     });
-    changeDate();
+    var firebaseConfig = {
+        apiKey: "AIzaSyAykWP69-EnGlmcbnAJJ8Yy95O7mOcPig0",
+        authDomain: "heartgardenreservation.firebaseapp.com",
+        databaseURL: "https://heartgardenreservation.firebaseio.com",
+        projectId: "heartgardenreservation",
+        storageBucket: "heartgardenreservation.appspot.com",
+        messagingSenderId: "522034061305",
+        appId: "1:522034061305:web:d04cc8aa2431fef8a8a728"
+    };
+    firebase.initializeApp(firebaseConfig);
+    firebase.auth().onAuthStateChanged(authStateObserver);
 });
 
 function changeDate() {
@@ -69,4 +99,19 @@ function changeDate() {
 
 function getIsoDate() {
     return date.toISOString().substring(0, 10);
+}
+
+function authStateObserver(user) {
+    if (user) { // User is signed in!
+        $("#loginContainer").hide();
+        $("#nickname").text(user.displayName);
+        $("#avatar").prop('src', user.photoURL);
+        $("#loggedInUserContainer").show();
+        changeDate()
+    } else { // User is signed out!
+        $("#loginContainer").show();
+        $("#loggedInUserContainer").hide();
+        $("#mainContent").hide();
+        $("#date").text("");
+    }
 }

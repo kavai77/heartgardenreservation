@@ -11,14 +11,24 @@
 </head>
 <body>
 <div class="container">
+  <div class="row hidden" id="loggedInUserContainer">
+    <div class="col right align-self-end">
+      <img id="avatar" height="40px" src="" style="border-radius: 50%;">&nbsp;
+      <small id="nickname"></small>&nbsp;
+      <a href="#" id="logout"><small>Sign Out</small></a>
+    </div>
+  </div>
   <div class="row">
-    <div class="col" style="text-align: center">
+    <div class="col center">
       <h1>Reservations</h1>
       <h3 id="date"></h3>
     </div>
   </div>
+  <div class="center hidden" id="loginContainer">
+    <img src="btn_google_signin_dark_normal_web.png" id="login" class="btn">
+  </div>
 
-  <div id="mainContent" style="display: none">
+  <div id="mainContent" class="hidden">
     <table class="table">
       <thead>
       <tr>
@@ -43,14 +53,17 @@
       </div>
     </div>
   </div>
-  <div id="spinner" style="text-align: center">
+  <div id="spinner" class="hidden center">
     <img src="/Spinner-1s-200px.gif">
   </div>
+
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script><script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-auth.js"></script>
 <script th:src="@{reservations.js(v=${reservationsjshash})}"></script>
 </body>
 </html>
