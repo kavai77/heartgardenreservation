@@ -34,6 +34,7 @@ public class ReservationControllerTest {
         config.setRestaurantCapacity(5);
         config.setMaxBookAheadDays(2);
         config.setTimezone(TIMEZONE);
+        config.setGoLive("2001-01-01");
         reservationController = new ReservationController(config);
     }
 
