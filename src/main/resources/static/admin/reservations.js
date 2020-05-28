@@ -77,6 +77,7 @@ function changeDate() {
                     .append($('<td>').text(data[i].name))
                     .append($('<td>').text(data[i].email))
                     .append($('<td>').text(data[i].nbOfGuests))
+                    .append($('<td>').text(data[i].reservedTables))
                     .append($('<td>').text(new Date(data[i].registered).toLocaleString('en-us')))
                     .append($('<td>')
                         .append($('<button>')

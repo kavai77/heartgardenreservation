@@ -68,24 +68,17 @@ function findSelectedDate(slots) {
 
 function fillNbOfGuest() {
     let nbOfGuests = $('#nbOfGuests');
-    const oneHouseholdOnlyInfo = $("#oneHouseholdOnlyInfo").text();
     const maxGuestInForm = parseInt($("#maxGuestInForm").text());
     const oneHouseHoldLimitInForm = parseInt($("#oneHouseHoldLimitInForm").text());
     for (let i = 1; i <= maxGuestInForm; i++) {
-        let text = i;
-        if (i > oneHouseHoldLimitInForm) {
-           text += " " + oneHouseholdOnlyInfo;
-        }
-        nbOfGuests.append($("<option></option>").attr("value", i).text(text));
+        nbOfGuests.append($("<option></option>").attr("value", i).text(i));
     }
     nbOfGuests.change(function () {
         const guests = parseInt(nbOfGuests.find("option:selected").val());
         if (guests > oneHouseHoldLimitInForm) {
-            $('#familyCheckGroup').show();
-            $('#familyCheck').prop('required', true);
+            $('#bigGroupInfo').show();
         } else {
-            $('#familyCheckGroup').hide();
-            $('#familyCheck').prop('required', false);
+            $('#bigGroupInfo').hide();
         }
     })
 }

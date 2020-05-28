@@ -40,15 +40,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 import static java.lang.String.format;
@@ -124,13 +116,14 @@ public class ReservationController {
             List<Long> slots = getSlotsToBeBooked(dateInput, timeInput);
 
             boolean anyMaxSlotViolation = slots.stream()
-                .map(it -> ofy().load().type(Reservation.class).filter("dateTime", it).count())
-                .anyMatch(it -> it >= restaurantConfiguration.getRestaurantCapacity());
+                .map(it -> ofy().load().type(Reservation.class).filter("dateTime", it).list())
+                .map(it -> it.stream().mapToInt(Reservation::getReservedTables).sum())
+                .anyMatch(reservedTables -> reservedTables >= restaurantConfiguration.getRestaurantCapacity());
             if (anyMaxSlotViolation) {
                 return messagePage(model, "reservation.fullybooked.title", "reservation.fullybooked.body");
             }
 
-            slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, customerKey)));
+            slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, 1, customerKey)));
 
             try {
                 sendConfirmationEmail(customer, slots.get(0));
@@ -170,7 +163,8 @@ public class ReservationController {
     List<Slots> getSlotDateAndTimes(Map<Long, Integer> reservationCount) throws ParseException {
         Calendar date = Calendar.getInstance(timezone);
         var slots = new ArrayList<Slots>();
-        for (int i = 0; i <= restaurantConfiguration.getMaxBookAheadDays(); i++) {
+        int i = 0;
+        while (i < restaurantConfiguration.getMaxBookAheadDays()) {
             String day = dateFormat.format(date.getTime());
             List<Long> slotsForDay = getSlotsForDay(day);
             if (!slotsForDay.isEmpty()) {
@@ -186,6 +180,7 @@ public class ReservationController {
                     }
                     slotTimes.add(time);
                 }
+                i++;
             }
             date.add(Calendar.DATE, 1);
         }
@@ -273,7 +268,8 @@ public class ReservationController {
 
     private void sendConfirmationEmail(Customer customer, Long firstSlot) throws SendGridException {
         try {
-            DateFormat localDateFormat = SimpleDateFormat.getDateInstance(DateFormat.FULL, LocaleContextHolder.getLocale());
+            Locale locale = LocaleContextHolder.getLocale();
+            DateFormat localDateFormat = SimpleDateFormat.getDateInstance(DateFormat.FULL, locale);
             Email from = new Email(restaurantConfiguration.getFromEmail());
             Email to = new Email(customer.getEmail());
             Mail mail = new Mail();
@@ -286,6 +282,7 @@ public class ReservationController {
             personalization.addDynamicTemplateData("time", timeFormat.format(new Date(firstSlot)));
             UriComponentsBuilder cancellationLinkBuilder = UriComponentsBuilder
                 .fromHttpUrl("https://heartgardenreservation.appspot.com/cancel")
+                .queryParam("lang", locale.getLanguage())
                 .queryParam("customerUUID", customer.getId());
             personalization.addDynamicTemplateData("cancellationlink", cancellationLinkBuilder.build().toUriString());
             mail.addPersonalization(personalization);
@@ -337,6 +334,7 @@ public class ReservationController {
         private final String name;
         private final String email;
         private final int nbOfGuests;
+        private final int reservedTables;
         private final String registered;
     }
 

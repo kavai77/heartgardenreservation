@@ -6,9 +6,6 @@
   opacity:0.9;
 }
 
-.body {
-  background-image: url("maxresdefault.jpg");
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
+.hidden {
+  display: none;
 }

@@ -42,9 +42,9 @@
           <div class="invalid-feedback" th:text="#{time.error}">
               Please select the starting time of your reservation
           </div>
-          <span style="display: none" id="today" th:text="#{today}">Today</span>
-          <span style="display: none" id="tomorrow" th:text="#{tomorrow}">Tomorrow</span>
-          <span style="display: none" id="noavailabletimetoday" th:text="#{noavailabletimetoday}">Tomorrow</span>
+          <span class="hidden" id="today" th:text="#{today}">Today</span>
+          <span class="hidden" id="tomorrow" th:text="#{tomorrow}">Tomorrow</span>
+          <span class="hidden" id="noavailabletimetoday" th:text="#{noavailabletimetoday}">Tomorrow</span>
       </div>
       <div class="form-group">
           <label for="nbOfGuests" th:text="#{nbOfGuests}">Number of Guests</label>
@@ -53,7 +53,7 @@
           <div class="invalid-feedback" th:text="#{nbOfGuests.error}">
               Please select the number of guests.
           </div>
-          <span style="display: none" id="oneHouseholdOnlyInfo" th:text="#{oneHouseholdOnlyInfo}">(from one household only)</span>
+          <small id="bigGroupInfo" style="color: red" class="hidden" th:text="#{bigGroupInfo}">You can share a table with more than 2 people only if you are from the same family and household. If not, you are still welcome but you have to sit at 1.5 meters distance.</small>
       </div>
       <div class="form-group form-check">
           <input type="checkbox" class="form-check-input" id="healthyCheck" required>
@@ -62,21 +62,14 @@
               We cannot serve you if you have these symptoms of illness.
           </div>
       </div>
-      <div class="form-group form-check" style="display: none" id="familyCheckGroup">
-          <input type="checkbox" class="form-check-input" id="familyCheck">
-          <label class="form-check-label" for="familyCheck" th:text="#{family}">I confirm that we belong to the same household.</label>
-          <div class="invalid-feedback" th:text="#{family.error}">
-              According to the Dutch regulations, groups over two people are allowed only if they belong to the same household.
-          </div>
-      </div>
       <button id="submitButton" class="btn btn-primary g-recaptcha"
               data-callback='onSubmit'
               data-action='submit'
               data-sitekey="6Lf8RfsUAAAAABCf34ZYzWpg_zv61NUtIOZRL2fV" th:text="#{reserve}">Reserve</button>
   </form>
 
-  <span style="display: none" id="maxGuestInForm" th:text="${maxGuestInForm}">2</span>
-  <span style="display: none" id="oneHouseHoldLimitInForm" th:text="${oneHouseHoldLimitInForm}">8</span>
+  <span class="hidden" id="maxGuestInForm" th:text="${maxGuestInForm}">2</span>
+  <span class="hidden" id="oneHouseHoldLimitInForm" th:text="${oneHouseHoldLimitInForm}">8</span>
 
 </div>
 <div class="modal fade" tabindex="-1" role="dialog" id="spinnerModal" aria-labelledby="modalLabel" aria-hidden="true">

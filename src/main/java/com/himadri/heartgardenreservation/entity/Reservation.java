@@ -17,6 +17,7 @@ public class Reservation {
     private String id;
     @Index
     private long dateTime;
+    private int reservedTables;
     @Index
     private Key<Customer> customerKey;
 }

@@ -113,6 +113,7 @@ public class AdminController {
                     customer.getName(),
                     customer.getEmail(),
                     customer.getNbOfGuests(),
+                    reservation.getReservedTables(),
                     dateTimeFormat.format(new Date(customer.getRegistered()))
                 ));
 
