@@ -5,7 +5,7 @@ Date.prototype.addDays = function(days) {
 }
 
 let startDate = new Date()
-let endDate = startDate.addDays(1)
+let endDate
 
 $( document ).ready(function() {
     $("#login")
@@ -44,8 +44,20 @@ $( document ).ready(function() {
     for (let i = 1; i <= 30; i++) {
         nbOfDays.append($("<option></option>").attr("value", i).text(i));
     }
+    if (typeof(Storage) !== "undefined" && localStorage.getItem("days") !== null) {
+        let days = localStorage.getItem("days");
+        nbOfDays.val(days);
+        endDate = startDate.addDays(parseInt(days));
+    } else {
+        endDate = startDate.addDays(1);
+    }
+
     nbOfDays.change(function () {
-        endDate = startDate.addDays(parseInt(nbOfDays.val()));
+        let days = nbOfDays.val();
+        if (typeof(Storage) !== "undefined") {
+            localStorage.setItem("days", days);
+        }
+        endDate = startDate.addDays(parseInt(days));
         changeDate();
     });
     const firebaseConfig = {
@@ -86,7 +98,7 @@ function changeDate() {
         success: function (data) {
             $("#spinner").hide();
             $("#mainContent").show();
-            $("#date").text(getIsoDate(startDate)+" - showing "+$("#nbOfDays").val() + " days");
+            $("#date").text(getIsoDate(startDate));
             let tbody = $("#tbody");
             tbody.empty();
             for (let i = 0; i < data.length; i++) {
