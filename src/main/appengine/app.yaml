@@ -4,3 +4,4 @@ inbound_services:
 automatic_scaling:
   max_instances: 2
   min_idle_instances: 1
+instance_class: F4
