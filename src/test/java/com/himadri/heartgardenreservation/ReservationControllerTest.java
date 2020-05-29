@@ -90,20 +90,20 @@ public class ReservationControllerTest {
             new ReservationController.Slots(
                 expectedDate,
                 List.of(
-                    new ReservationController.SlotTimes("09:00", false),
-                    new ReservationController.SlotTimes("09:30", true),
-                    new ReservationController.SlotTimes("10:00", true),
-                    new ReservationController.SlotTimes("10:30", true),
-                    new ReservationController.SlotTimes("11:00", true),
-                    new ReservationController.SlotTimes("11:30", true),
-                    new ReservationController.SlotTimes("12:00", true),
-                    new ReservationController.SlotTimes("12:30", false),
-                    new ReservationController.SlotTimes("13:00", false),
-                    new ReservationController.SlotTimes("13:30", true),
-                    new ReservationController.SlotTimes("14:00", true),
-                    new ReservationController.SlotTimes("14:30", true),
-                    new ReservationController.SlotTimes("15:00", false),
-                    new ReservationController.SlotTimes("15:30", false)
+                    new ReservationController.SlotTimes("09:00", 0),
+                    new ReservationController.SlotTimes("09:30", 5),
+                    new ReservationController.SlotTimes("10:00", 5),
+                    new ReservationController.SlotTimes("10:30", 5),
+                    new ReservationController.SlotTimes("11:00", 1),
+                    new ReservationController.SlotTimes("11:30", 5),
+                    new ReservationController.SlotTimes("12:00", 5),
+                    new ReservationController.SlotTimes("12:30", 5),
+                    new ReservationController.SlotTimes("13:00", 0),
+                    new ReservationController.SlotTimes("13:30", 5),
+                    new ReservationController.SlotTimes("14:00", 5),
+                    new ReservationController.SlotTimes("14:30", 5),
+                    new ReservationController.SlotTimes("15:00", 5),
+                    new ReservationController.SlotTimes("15:30", 0)
                 )
             ),
             actualSlots

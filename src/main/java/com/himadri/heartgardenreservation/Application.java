@@ -1,5 +1,6 @@
 package com.himadri.heartgardenreservation;
 
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,11 @@ public class Application {
     @Bean
     public GoogleCloudRuntime runtime() {
         return System.getenv("GAE_SERVICE") != null ? GoogleCloudRuntime.CLOUD : GoogleCloudRuntime.LOCAL;
+    }
+
+    @Bean
+    public EmailValidator emailValidator() {
+        return EmailValidator.getInstance();
     }
 
     public enum GoogleCloudRuntime {

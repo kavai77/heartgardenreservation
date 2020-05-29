@@ -17,6 +17,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.googlecode.objectify.ObjectifyService.ofy;
 import static java.lang.String.format;
 
@@ -65,6 +69,9 @@ public class ReservationController {
     @Autowired
     private RestTemplateBuilder restTemplateBuilder;
 
+    @Autowired
+    private EmailValidator emailValidator;
+
     @Value("${recaptchasecret}")
     private String recaptchaSecret;
 
@@ -85,8 +92,6 @@ public class ReservationController {
     public String index(Model model) {
         model.addAttribute("indexjshash", resourceHash.getResourceHash(ResourceHash.Resource.INDEX_JS));
         model.addAttribute("indexcsshash", resourceHash.getResourceHash(ResourceHash.Resource.INDEX_CSS));
-        model.addAttribute("maxGuestInForm", restaurantConfiguration.getMaxGuestInForm());
-        model.addAttribute("oneHouseHoldLimitInForm", restaurantConfiguration.getOneHouseHoldLimitInForm());
         return "index";
     }
 
@@ -108,22 +113,29 @@ public class ReservationController {
         Model model
     ) {
         try {
+            checkArgument(StringUtils.isNotBlank(nameInput) && nameInput.length() <= 256);
+            checkArgument(StringUtils.isNotBlank(emailInput) && emailInput.length() <= 256);
+            checkArgument(emailValidator.isValid(emailInput));
+            checkNotNull(dateFormat.parse(dateInput));
+            checkNotNull(timeFormat.parse(timeInput));
+            checkArgument(restaurantConfiguration.getGuestTableNbMap().containsKey(nbOfGuests));
             verifyRecatcha(recaptchaResponse, request.getRemoteAddr());
             final Customer customer = new Customer(UUID.randomUUID().toString(), nameInput, emailInput, nbOfGuests,
                 System.currentTimeMillis());
             final Key<Customer> customerKey = ofy().save().entity(customer).now();
 
             List<Long> slots = getSlotsToBeBooked(dateInput, timeInput);
+            int nbOfTables = restaurantConfiguration.getGuestTableNbMap().get(nbOfGuests);
 
             boolean anyMaxSlotViolation = slots.stream()
                 .map(it -> ofy().load().type(Reservation.class).filter("dateTime", it).list())
                 .map(it -> it.stream().mapToInt(Reservation::getReservedTables).sum())
-                .anyMatch(reservedTables -> reservedTables >= restaurantConfiguration.getRestaurantCapacity());
+                .anyMatch(reservedTables -> reservedTables + nbOfTables > restaurantConfiguration.getRestaurantCapacity());
             if (anyMaxSlotViolation) {
                 return messagePage(model, "reservation.fullybooked.title", "reservation.fullybooked.body");
             }
 
-            slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, 1, customerKey)));
+            slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, nbOfTables, customerKey)));
 
             try {
                 sendConfirmationEmail(customer, slots.get(0));
@@ -146,17 +158,24 @@ public class ReservationController {
     public List<Slots> slots() throws ParseException {
         List<Reservation> reservations = ofy().load().type(Reservation.class).filter("dateTime >=", System.currentTimeMillis()).list();
         Map<Long, Integer> reservationCount = new HashMap<>();
-        reservations.forEach(it -> reservationCount.compute(it.getDateTime(), (k, v) -> (v == null ? 1 : v + 1)));
+        reservations.forEach(it -> reservationCount.compute(it.getDateTime(), (k, v) -> (v == null ? it.getReservedTables() : v + it.getReservedTables())));
         return getSlotDateAndTimes(reservationCount);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/cancel")
     public String cancelReservation(@RequestParam String customerUUID, Model model) {
+        checkNotNull(UUID.fromString(customerUUID));
         Key<Customer> customerKey = Key.create(Customer.class, customerUUID);
         List<Reservation> reservationList = ofy().load().type(Reservation.class).filter("customerKey", customerKey).list();
         ofy().delete().entities(reservationList);
         ofy().delete().key(customerKey);
         return messagePage(model, "reservation.cancellation.title", "reservation.cancellation.body");
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/config")
+    @ResponseBody
+    public RestaurantConfiguration config() {
+        return restaurantConfiguration;
     }
 
     @VisibleForTesting
@@ -171,13 +190,8 @@ public class ReservationController {
                 List<SlotTimes> slotTimes = new ArrayList<>();
                 slots.add(new Slots(day, slotTimes));
                 for (Long slot : slotsForDay) {
-                    boolean free = reservationCount.getOrDefault(slot, 0) < restaurantConfiguration.getRestaurantCapacity();
-                    SlotTimes time = new SlotTimes(timeFormat.format(new Date(slot)), free);
-                    if (!free) {
-                        for (int j = slotTimes.size() - 1; j >= Math.max(slotTimes.size() - restaurantConfiguration.getSlotsPerReservation() + 1, 0); j--) {
-                            slotTimes.get(j).setFree(false);
-                        }
-                    }
+                    int freeTables = Math.max(0, restaurantConfiguration.getRestaurantCapacity() - reservationCount.getOrDefault(slot, 0));
+                    SlotTimes time = new SlotTimes(timeFormat.format(new Date(slot)), freeTables);
                     slotTimes.add(time);
                 }
                 i++;
@@ -247,7 +261,7 @@ public class ReservationController {
         return list;
     }
 
-    private void verifyRecatcha(String recaptchaResponse, String remoteAddr ) throws RecaptchaException {
+    private void verifyRecatcha(String recaptchaResponse, String remoteAddr) throws RecaptchaException {
         RestTemplate restTemplate = restTemplateBuilder.build();
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl("https://www.google.com/recaptcha/api/siteverify")
@@ -258,7 +272,7 @@ public class ReservationController {
         ResponseEntity<RecaptchaResponse> entity = restTemplate.postForEntity(
             uriBuilder.toUriString(), null,
             RecaptchaResponse.class);
-        if (entity.getStatusCode()== HttpStatus.OK) {
+        if (entity.getStatusCode() == HttpStatus.OK) {
             RecaptchaResponse response = entity.getBody();
             if (!response.isSuccess()) {
                 throw new RecaptchaException(response);
@@ -268,6 +282,9 @@ public class ReservationController {
 
     private void sendConfirmationEmail(Customer customer, Long firstSlot) throws SendGridException {
         try {
+            if (StringUtils.equals(restaurantConfiguration.getFromEmail(), customer.getEmail())) {
+                return;
+            }
             Locale locale = LocaleContextHolder.getLocale();
             DateFormat localDateFormat = SimpleDateFormat.getDateInstance(DateFormat.FULL, locale);
             Email from = new Email(restaurantConfiguration.getFromEmail());
@@ -322,7 +339,7 @@ public class ReservationController {
     @AllArgsConstructor
     public static class SlotTimes {
         private final String time;
-        private boolean free;
+        private final int freeTables;
     }
 
     @Data

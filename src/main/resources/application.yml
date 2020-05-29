@@ -10,6 +10,15 @@ restaurant:
   maxBookAheadDays: 14
   timezone: Europe/Amsterdam
   fromemail: reservations@heart-garden.nl
-  maxGuestInForm: 8
   oneHouseHoldLimitInForm: 2
   goLive: 2020-06-01
+  guestTableNbMap1: 1
+  guestTableNbMap:
+    1: 1
+    2: 1
+    3: 2
+    4: 2
+    5: 3
+    6: 3
+    7: 4
+    8: 4

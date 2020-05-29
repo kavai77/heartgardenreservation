@@ -1,86 +1,131 @@
 $( document ).ready(function() {
-    $.get({
-        url: "/slots",
-        success: function (slots) {
-            fillDates(slots);
-            fillTimes(slots);
-        }
+    let config;
+    let slots;
+    $.when(
+        $.get({
+            url: "/config",
+            success: function (data) {
+                config = data;
+            }
+        }),
+
+        $.get({
+            url: "/slots",
+            success: function (data) {
+                slots = data;
+            }
+        })
+
+    ).then(function() {
+        const reservation = new Reservation(config, slots)
+        reservation.fillNbOfGuest();
+        reservation.fillDates();
+        reservation.fillTimes();
     });
-    fillNbOfGuest();
+
     $('#spinnerModal').modal({backdrop: 'static', keyboard: false, show: false});
 });
 
-function fillDates(slots) {
-    let searchParams = new URLSearchParams(window.location.search)
-    let lang = searchParams.get('lang')
-    if (lang === null) {
-        lang = "en";
+class Reservation {
+    constructor(config, slots) {
+        this.config = config;
+        this.slots = slots;
     }
-    let dateInput = $('#dateInput');
-    const now = new Date();
-    const today = now.toISOString().substring(0, 10);
-    now.setDate(now.getDate() + 1);
-    const tomorrow = now.toISOString().substring(0, 10);
-    for (let i = 0; i < slots.length; i++) {
-        let value
-        if (slots[i].date === today) {
-            value = $("#today").text();
-        } else if (slots[i].date === tomorrow) {
-            value = $("#tomorrow").text();
-        } else {
-            const date = new Date(slots[i].date);
-            value = date.toLocaleString(lang, { month: 'long', weekday: 'long', day: 'numeric' });
+
+    fillDates() {
+        let searchParams = new URLSearchParams(window.location.search)
+        let lang = searchParams.get('lang')
+        if (lang === null) {
+            lang = "en";
         }
-        dateInput.append($("<option></option>").attr("value", slots[i].date).text(value));
+        let dateInput = $('#dateInput');
+        const now = new Date();
+        const today = now.toISOString().substring(0, 10);
+        now.setDate(now.getDate() + 1);
+        const tomorrow = now.toISOString().substring(0, 10);
+        for (let i = 0; i < this.slots.length; i++) {
+            let value
+            if (this.slots[i].date === today) {
+                value = $("#today").text();
+            } else if (this.slots[i].date === tomorrow) {
+                value = $("#tomorrow").text();
+            } else {
+                const date = new Date(this.slots[i].date);
+                value = date.toLocaleString(lang, { month: 'long', weekday: 'long', day: 'numeric' });
+            }
+            dateInput.append($("<option></option>").attr("value", this.slots[i].date).text(value));
+        }
+        const self = this;
+        dateInput.change(function () { self.fillTimes() });
     }
 
-    dateInput.change(function () { fillTimes(slots); })
-}
-
-function fillTimes(slots) {
-    const timeInput = $('#timeInput');
-    timeInput.empty();
-    const selectedSlot = findSelectedDate(slots);
-    for (let i = 0; i < selectedSlot.slotTimes.length; i++) {
-        const time = selectedSlot.slotTimes[i].time;
-        const enabled = selectedSlot.slotTimes[i].free;
-        timeInput.append($("<option></option>").attr("value", time).attr("disabled", !enabled).text(time));
+    fillTimes() {
+        const timeInput = $('#timeInput');
+        timeInput.empty();
+        const selectedSlot = this.findSelectedDate();
+        const necessarySpaces = parseInt($('#nbOfGuests').find("option:selected").data("tables"));
+        for (let i = 0; i < selectedSlot.slotTimes.length; i++) {
+            const time = selectedSlot.slotTimes[i].time;
+            const enabled = this.slotEnabled(selectedSlot.slotTimes, i, this.config.slotsPerReservation, necessarySpaces);
+            timeInput.append($("<option></option>").attr("value", time).attr("disabled", !enabled).text(time));
+        }
+        const isOptionEmpty = selectedSlot.slotTimes.length === 0
+        if (isOptionEmpty) {
+            timeInput.append($("<option></option>").text($("#noavailabletimetoday").text()));
+        }
+        const elementsToDisableIfNoSlots = ["#timeInput", "#submitButton", "#nbOfGuest"];
+        elementsToDisableIfNoSlots.forEach(function(item) {
+            $(item).prop('disabled', isOptionEmpty);
+        });
     }
-    const isOptionEmpty = selectedSlot.slotTimes.length === 0
-    if (isOptionEmpty) {
-        timeInput.append($("<option></option>").text($("#noavailabletimetoday").text()));
-    }
-    const elementsToDisableIfNoSlots = ["#timeInput", "#submitButton", "#nbOfGuest"];
-    elementsToDisableIfNoSlots.forEach(function(item) {
-        $(item).prop('disabled', isOptionEmpty);
-    });
-}
 
-function findSelectedDate(slots) {
-    const selectedDate = $("#dateInput").find("option:selected").val();
-    for (let i = 0; i < slots.length; i++) {
-        if (slots[i].date === selectedDate) {
-            return slots[i];
+    slotEnabled(slotTimes, startIndex, slotsPerReservation, necessarySpaces) {
+        const endIndex = Math.min(startIndex + slotsPerReservation, slotTimes.length);
+        for (let i = startIndex; i < endIndex; i++) {
+            if (slotTimes[i].freeTables < necessarySpaces) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    findSelectedDate() {
+        const selectedDate = $("#dateInput").val();
+        for (let i = 0; i < this.slots.length; i++) {
+            if (this.slots[i].date === selectedDate) {
+                return this.slots[i];
+            }
         }
     }
 
-}
-
-function fillNbOfGuest() {
-    let nbOfGuests = $('#nbOfGuests');
-    const maxGuestInForm = parseInt($("#maxGuestInForm").text());
-    const oneHouseHoldLimitInForm = parseInt($("#oneHouseHoldLimitInForm").text());
-    for (let i = 1; i <= maxGuestInForm; i++) {
-        nbOfGuests.append($("<option></option>").attr("value", i).text(i));
-    }
-    nbOfGuests.change(function () {
-        const guests = parseInt(nbOfGuests.find("option:selected").val());
-        if (guests > oneHouseHoldLimitInForm) {
-            $('#bigGroupInfo').show();
-        } else {
-            $('#bigGroupInfo').hide();
+    fillNbOfGuest() {
+        const guestNb = []
+        for (let [key, value] of Object.entries(this.config.guestTableNbMap)) {
+            guestNb.push(parseInt(key));
         }
-    })
+        guestNb.sort();
+        const nbOfGuests = $('#nbOfGuests');
+        for (let i = 0; i < guestNb.length; i++) {
+            const guest = guestNb[i].toString();
+            nbOfGuests.append($("<option></option>")
+                .attr("value", guest)
+                .data("tables", this.config.guestTableNbMap[guest])
+                .text(guest));
+        }
+        const self = this;
+        nbOfGuests.change(function () {
+            const guests = parseInt(nbOfGuests.val());
+            if (guests > self.config.oneHouseHoldLimitInForm) {
+                $('#bigGroupInfo').show();
+            } else {
+                $('#bigGroupInfo').hide();
+            }
+            let timeInput = $('#timeInput');
+            const selectedTime = timeInput.val();
+            self.fillTimes();
+            timeInput.val(selectedTime);
+        })
+    }
 }
 
 function onSubmit() {

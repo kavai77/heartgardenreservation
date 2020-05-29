@@ -28,6 +28,15 @@
           </div>
       </div>
       <div class="form-group">
+          <label for="nbOfGuests" th:text="#{nbOfGuests}">Number of Guests</label>
+          <select id="nbOfGuests" name="nbOfGuests" class="form-control" required>
+          </select>
+          <div class="invalid-feedback" th:text="#{nbOfGuests.error}">
+              Please select the number of guests.
+          </div>
+          <small id="bigGroupInfo" style="color: red" class="hidden" th:text="#{bigGroupInfo}">You can share a table with more than 2 people only if you are from the same family and household. If not, you are still welcome but you have to sit at 1.5 meters distance.</small>
+      </div>
+      <div class="form-group">
             <label for="dateInput" th:text="#{date}">Date</label>
             <select id="dateInput" name="dateInput" class="form-control" required>
             <div class="invalid-feedback" th:text="#{date.error}">
@@ -46,15 +55,6 @@
           <span class="hidden" id="tomorrow" th:text="#{tomorrow}">Tomorrow</span>
           <span class="hidden" id="noavailabletimetoday" th:text="#{noavailabletimetoday}">Tomorrow</span>
       </div>
-      <div class="form-group">
-          <label for="nbOfGuests" th:text="#{nbOfGuests}">Number of Guests</label>
-          <select id="nbOfGuests" name="nbOfGuests" class="form-control" required>
-          </select>
-          <div class="invalid-feedback" th:text="#{nbOfGuests.error}">
-              Please select the number of guests.
-          </div>
-          <small id="bigGroupInfo" style="color: red" class="hidden" th:text="#{bigGroupInfo}">You can share a table with more than 2 people only if you are from the same family and household. If not, you are still welcome but you have to sit at 1.5 meters distance.</small>
-      </div>
       <div class="form-group form-check">
           <input type="checkbox" class="form-check-input" id="healthyCheck" required>
           <label class="form-check-label" for="healthyCheck" th:text="#{health}">I confirm that I do not have any symptoms of illness, like coughing, fever or shortness of breath.</label>
@@ -67,10 +67,6 @@
               data-action='submit'
               data-sitekey="6Lf8RfsUAAAAABCf34ZYzWpg_zv61NUtIOZRL2fV" th:text="#{reserve}">Reserve</button>
   </form>
-
-  <span class="hidden" id="maxGuestInForm" th:text="${maxGuestInForm}">2</span>
-  <span class="hidden" id="oneHouseHoldLimitInForm" th:text="${oneHouseHoldLimitInForm}">8</span>
-
 </div>
 <div class="modal fade" tabindex="-1" role="dialog" id="spinnerModal" aria-labelledby="modalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
