@@ -1,4 +1,11 @@
-let date = new Date()
+Date.prototype.addDays = function(days) {
+    let date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
+}
+
+let startDate = new Date()
+let endDate = startDate.addDays(1)
 
 $( document ).ready(function() {
     $("#login")
@@ -22,11 +29,23 @@ $( document ).ready(function() {
         firebase.auth().signOut();
     });
     $("#prevLink").click(function () {
-        date.setDate(date.getDate() - 1);
+        const nbOfDays = parseInt($("#nbOfDays").val());
+        startDate.setDate(startDate.getDate() - nbOfDays);
+        endDate.setDate(endDate.getDate() - nbOfDays);
         changeDate();
     });
     $("#nextLink").click(function () {
-        date.setDate(date.getDate() + 1);
+        const nbOfDays = parseInt($("#nbOfDays").val());
+        startDate.setDate(startDate.getDate() + nbOfDays);
+        endDate.setDate(endDate.getDate() + nbOfDays);
+        changeDate();
+    });
+    const nbOfDays = $("#nbOfDays");
+    for (let i = 1; i <= 30; i++) {
+        nbOfDays.append($("<option></option>").attr("value", i).text(i));
+    }
+    nbOfDays.change(function () {
+        endDate = startDate.addDays(parseInt(nbOfDays.val()));
         changeDate();
     });
     const firebaseConfig = {
@@ -61,13 +80,13 @@ function changeDate() {
     $.get({
         url: "/admin/reservations",
         data: {
-            fromDate: getIsoDate(),
-            toDate: getIsoDate()
+            fromDate: getIsoDate(startDate),
+            toDate: getIsoDate(endDate)
         },
         success: function (data) {
             $("#spinner").hide();
             $("#mainContent").show();
-            $("#date").text(getIsoDate());
+            $("#date").text(getIsoDate(startDate)+" - showing "+$("#nbOfDays").val() + " days");
             let tbody = $("#tbody");
             tbody.empty();
             for (let i = 0; i < data.length; i++) {
@@ -111,7 +130,7 @@ function changeDate() {
     });
 }
 
-function getIsoDate() {
+function getIsoDate(date) {
     return date.toISOString().substring(0, 10);
 }
 

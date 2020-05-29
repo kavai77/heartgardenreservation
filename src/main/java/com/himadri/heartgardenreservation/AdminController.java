@@ -96,7 +96,7 @@ public class AdminController {
         checkAuthorization(firebaseToken);
         List<Reservation> reservations = ofy().load().type(Reservation.class)
             .filter("dateTime >=", dateFormat.parse(fromDate).getTime())
-            .filter("dateTime <",dateFormat.parse(toDate).getTime() + 1000 * 60 * 60 * 24)
+            .filter("dateTime <",dateFormat.parse(toDate).getTime())
             .list();
         Set<String> keySet = reservations.stream()
             .map(it -> it.getCustomerKey().getName())
