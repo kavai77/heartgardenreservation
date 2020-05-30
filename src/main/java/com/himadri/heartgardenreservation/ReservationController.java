@@ -8,7 +8,6 @@ import com.himadri.heartgardenreservation.entity.Customer;
 import com.himadri.heartgardenreservation.entity.Reservation;
 import com.sendgrid.Method;
 import com.sendgrid.Request;
-import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Email;
@@ -56,6 +55,7 @@ public class ReservationController {
     static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     static final DateFormat timeFormat = new SimpleDateFormat("HH:mm");
     static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+    private static final String EMPTY_PNG = "empty.png";
 
     private final RestaurantConfiguration restaurantConfiguration;
     private final TimeZone timezone;
@@ -132,7 +132,7 @@ public class ReservationController {
                 .map(it -> it.stream().mapToInt(Reservation::getReservedTables).sum())
                 .anyMatch(reservedTables -> reservedTables + nbOfTables > restaurantConfiguration.getRestaurantCapacity());
             if (anyMaxSlotViolation) {
-                return messagePage(model, "reservation.fullybooked.title", "reservation.fullybooked.body");
+                return messagePage(model, "reservation.fullybooked.title", "reservation.fullybooked.body", EMPTY_PNG);
             }
 
             slots.forEach(it -> ofy().save().entity(new Reservation(UUID.randomUUID().toString(), it, nbOfTables, customerKey)));
@@ -143,13 +143,13 @@ public class ReservationController {
                 LOGGER.error("Sendgrid exception", e);
             }
 
-            return messagePage(model, "reservation.success.title", "reservation.success.body");
+            return messagePage(model, "reservation.success.title", "reservation.success.body", "success.gif");
         } catch (RecaptchaException e) {
             LOGGER.info("Recaptcha verification failed {}", e.getRecaptchaResponse());
-            return messagePage(model, "reservation.generalerror.title", "reservation.recatchaerror");
+            return messagePage(model, "reservation.generalerror.title", "reservation.recatchaerror", EMPTY_PNG);
         } catch (Exception e) {
             LOGGER.error("Error", e);
-            return messagePage(model, "reservation.generalerror.title", "reservation.generalerror.body");
+            return messagePage(model, "reservation.generalerror.title", "reservation.generalerror.body", EMPTY_PNG);
         }
     }
 
@@ -169,7 +169,7 @@ public class ReservationController {
         List<Reservation> reservationList = ofy().load().type(Reservation.class).filter("customerKey", customerKey).list();
         ofy().delete().entities(reservationList);
         ofy().delete().key(customerKey);
-        return messagePage(model, "reservation.cancellation.title", "reservation.cancellation.body");
+        return messagePage(model, "reservation.cancellation.title", "reservation.cancellation.body", "cancel.gif");
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/config")
@@ -310,18 +310,16 @@ public class ReservationController {
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
-            Response response = sg.api(request);
-            if (!HttpStatus.valueOf(response.getStatusCode()).is2xxSuccessful()) {
-                throw new SendGridException(response.getStatusCode(), response.getBody());
-            }
+            sg.attempt(request);
         } catch (IOException | RuntimeException e) {
             throw new SendGridException(e);
         }
     }
 
-    private String messagePage(Model model, String titleKey, String bodyKey) {
+    private String messagePage(Model model, String titleKey, String bodyKey, String img) {
         model.addAttribute("title", getMessage(titleKey));
         model.addAttribute("body", getMessage(bodyKey));
+        model.addAttribute("img", img);
         return "message";
     }
 

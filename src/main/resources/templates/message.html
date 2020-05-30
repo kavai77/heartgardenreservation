@@ -8,9 +8,12 @@
   <title>Heart-Garden reservation</title>
 </head>
 <body>
-<div class="container">
+<div class="container" style="max-width: 500px">
   <h3 th:text="${title}"></h3>
   <div th:text="${body}"></div>
+  <div style="text-align: center; margin-top: 20px">
+    <img th:src="${img}" style="max-width: 500px" >
+  </div>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
