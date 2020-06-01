@@ -27,3 +27,7 @@ Run on `localhost:8081`:
 ```
 docker run -p 8081:8080 kavai77/heartgardenreservation:1.0
 ```
+Save image:
+```
+docker save -o dockerimage kavai77/heartgardenreservation:1.0
+```
