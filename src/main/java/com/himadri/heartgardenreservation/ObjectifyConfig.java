@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 @Configuration
@@ -52,13 +51,19 @@ public class ObjectifyConfig {
         public void contextInitialized(ServletContextEvent sce) {
             if (runtime == Application.GoogleCloudRuntime.LOCAL) {
                 try {
+//                    ObjectifyService.init(new ObjectifyFactory(
+//                            DatastoreOptions.newBuilder()
+//                                    .setHost("localhost:8484")
+//                                    .setProjectId("my-project")
+//                                    .setCredentials(GoogleCredentials.fromStream(new FileInputStream(Application.LOCAL_APPLICATION_CREDENTIALS)))
+//                                    .build()
+//                                    .getService()
+//                    ));
                     ObjectifyService.init(new ObjectifyFactory(
-                            DatastoreOptions.newBuilder()
-                                    .setHost("localhost:8484")
-                                    .setProjectId("my-project")
-                                    .setCredentials(GoogleCredentials.fromStream(new FileInputStream(Application.LOCAL_APPLICATION_CREDENTIALS)))
-                                    .build()
-                                    .getService()
+                        DatastoreOptions.newBuilder()
+                            .setCredentials(GoogleCredentials.fromStream(getClass().getResourceAsStream(Application.GAE_SERVICE_ACCOUNT)))
+                            .build()
+                            .getService()
                     ));
                 } catch (IOException e) {
                     throw new RuntimeException(e);

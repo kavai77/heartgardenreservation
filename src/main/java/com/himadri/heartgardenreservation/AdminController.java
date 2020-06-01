@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.annotation.PostConstruct;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class AdminController {
         GoogleCredentials googleCredentials;
         if (runtime == Application.GoogleCloudRuntime.LOCAL) {
             try {
-                googleCredentials = GoogleCredentials.fromStream(new FileInputStream(Application.LOCAL_APPLICATION_CREDENTIALS));
+                googleCredentials = GoogleCredentials.fromStream(getClass().getResourceAsStream(Application.GAE_SERVICE_ACCOUNT));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

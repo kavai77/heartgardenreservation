@@ -12,6 +12,7 @@ import java.util.Collections;
 @PropertySource("classpath:/secrets.yml")
 public class Application {
     public static final String LOCAL_APPLICATION_CREDENTIALS = System.getenv("HOME") + "/.config/gcloud/application_default_credentials.json";
+    public static final String GAE_SERVICE_ACCOUNT = "/heartgardenreservation-c9ad53c1456d.json";
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(Application.class);
