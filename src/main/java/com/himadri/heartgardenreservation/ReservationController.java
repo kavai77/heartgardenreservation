@@ -252,8 +252,9 @@ public class ReservationController {
         date.set(Calendar.HOUR_OF_DAY, restaurantConfiguration.getOpenHour());
         date.set(Calendar.MINUTE, restaurantConfiguration.getOpenMinute());
         var list = new ArrayList<Long>();
+        long slotInMillis = restaurantConfiguration.getSlotInMinutes() * 60 * 1000;
         while (date.compareTo(closeTime) < 0) {
-            if (date.getTimeInMillis() >= System.currentTimeMillis()) {
+            if (date.getTimeInMillis() > System.currentTimeMillis() - slotInMillis) {
                 list.add(date.getTimeInMillis());
             }
             date.add(Calendar.MINUTE, restaurantConfiguration.getSlotInMinutes());

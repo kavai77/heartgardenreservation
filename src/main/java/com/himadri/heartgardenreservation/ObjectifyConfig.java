@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
-import java.io.IOException;
 
 @Configuration
 public class ObjectifyConfig {
@@ -31,48 +30,30 @@ public class ObjectifyConfig {
     }
 
     @Bean
-    public ServletListenerRegistrationBean<ObjectifyListener> listenerRegistrationBean(Application.GoogleCloudRuntime runtime) {
+    public ServletListenerRegistrationBean<ObjectifyListener> listenerRegistrationBean(GoogleCredentials googleCredentials) {
         ServletListenerRegistrationBean<ObjectifyListener> bean =
                 new ServletListenerRegistrationBean<>();
-        bean.setListener(new ObjectifyListener(runtime));
+        bean.setListener(new ObjectifyListener(googleCredentials));
         return bean;
     }
 
     @WebListener
     public static class ObjectifyListener implements ServletContextListener {
-        private final Application.GoogleCloudRuntime runtime;
+        private final GoogleCredentials googleCredentials;
 
-        public ObjectifyListener(Application.GoogleCloudRuntime runtime) {
+        public ObjectifyListener(GoogleCredentials googleCredentials) {
 
-            this.runtime = runtime;
+            this.googleCredentials = googleCredentials;
         }
 
         @Override
         public void contextInitialized(ServletContextEvent sce) {
-            if (runtime == Application.GoogleCloudRuntime.LOCAL) {
-                try {
-//                    ObjectifyService.init(new ObjectifyFactory(
-//                            DatastoreOptions.newBuilder()
-//                                    .setHost("localhost:8484")
-//                                    .setProjectId("my-project")
-//                                    .setCredentials(GoogleCredentials.fromStream(new FileInputStream(Application.LOCAL_APPLICATION_CREDENTIALS)))
-//                                    .build()
-//                                    .getService()
-//                    ));
-                    ObjectifyService.init(new ObjectifyFactory(
-                        DatastoreOptions.newBuilder()
-                            .setCredentials(GoogleCredentials.fromStream(getClass().getResourceAsStream(Application.GAE_SERVICE_ACCOUNT)))
-                            .build()
-                            .getService()
-                    ));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                ObjectifyService.init(new ObjectifyFactory(
-                        DatastoreOptions.getDefaultInstance().getService()
-                ));
-            }
+            ObjectifyService.init(new ObjectifyFactory(
+                DatastoreOptions.newBuilder()
+                    .setCredentials(googleCredentials)
+                    .build()
+                    .getService()
+            ));
 
             ObjectifyService.register(Customer.class);
             ObjectifyService.register(Reservation.class);

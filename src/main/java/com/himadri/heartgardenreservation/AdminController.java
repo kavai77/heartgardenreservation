@@ -49,7 +49,7 @@ public class AdminController {
     private ResourceHash resourceHash;
 
     @Autowired
-    private Application.GoogleCloudRuntime runtime;
+    private GoogleCredentials googleCredentials;
 
     @Value("${tokenIssuer}")
     private String tokenIssuer;
@@ -59,16 +59,6 @@ public class AdminController {
 
     @PostConstruct
     public void init() throws IOException {
-        GoogleCredentials googleCredentials;
-        if (runtime == Application.GoogleCloudRuntime.LOCAL) {
-            try {
-                googleCredentials = GoogleCredentials.fromStream(getClass().getResourceAsStream(Application.GAE_SERVICE_ACCOUNT));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            googleCredentials = GoogleCredentials.getApplicationDefault();
-        }
         FirebaseOptions options = new FirebaseOptions.Builder()
             .setCredentials(googleCredentials)
             .setProjectId("heartgardenreservation")
