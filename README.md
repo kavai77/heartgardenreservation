@@ -1,5 +1,5 @@
 # Heart-Garden Reservation
-https://heartgardenreservation.appspot.com/
+https://heartgardenreservation.himadri.eu/
 
 ## Setup
 ```

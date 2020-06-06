@@ -34,7 +34,7 @@ public class SendGridTest {
         personalization.addDynamicTemplateData("name", "Himadri");
         personalization.addDynamicTemplateData("date", "Monday, June 8th, 2020");
         personalization.addDynamicTemplateData("time", "12:30");
-        personalization.addDynamicTemplateData("cancellationlink", "https://heartgardenreservation.appspot.com/cancel");
+        personalization.addDynamicTemplateData("cancellationlink", "https://heartgardenreservation.himadri.eu/cancel");
         mail.addPersonalization(personalization);
         mail.setTemplateId(messages.getProperty("confirmationemail"));
 

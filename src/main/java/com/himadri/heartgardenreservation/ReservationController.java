@@ -299,7 +299,7 @@ public class ReservationController {
             personalization.addDynamicTemplateData("date", localDateFormat.format(new Date(firstSlot)));
             personalization.addDynamicTemplateData("time", timeFormat.format(new Date(firstSlot)));
             UriComponentsBuilder cancellationLinkBuilder = UriComponentsBuilder
-                .fromHttpUrl("https://heartgardenreservation.appspot.com/cancel")
+                .fromHttpUrl("https://heartgardenreservation.himadri.eu/cancel")
                 .queryParam("lang", locale.getLanguage())
                 .queryParam("customerUUID", customer.getId());
             personalization.addDynamicTemplateData("cancellationlink", cancellationLinkBuilder.build().toUriString());

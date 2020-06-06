@@ -101,15 +101,16 @@ function changeDate() {
             $("#date").text(getIsoDate(startDate));
             let tbody = $("#tbody");
             tbody.empty();
+            let dateOptions = { month: 'long', day: 'numeric' };
+            let registeredOptions = { hour12: false, month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
             for (let i = 0; i < data.length; i++) {
                 tbody.append($('<tr>')
-                    .append($('<td>').text(data[i].date))
+                    .append($('<td>').text(new Date(data[i].date).toLocaleString('en-US', dateOptions)))
                     .append($('<td>').text(data[i].times.join(", ")))
                     .append($('<td>').text(data[i].name))
-                    .append($('<td>').text(data[i].email))
                     .append($('<td>').text(data[i].nbOfGuests))
                     .append($('<td>').text(data[i].reservedTables))
-                    .append($('<td>').text(new Date(data[i].registered).toLocaleString('en-us')))
+                    .append($('<td>').text(new Date(data[i].registered).toLocaleString('en-US', registeredOptions)))
                     .append($('<td>')
                         .append($('<button>')
                             .addClass("btn")
