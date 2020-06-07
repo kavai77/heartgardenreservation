@@ -101,7 +101,7 @@ function changeDate() {
             $("#date").text(getIsoDate(startDate));
             let tbody = $("#tbody");
             tbody.empty();
-            let dateOptions = { month: 'long', day: 'numeric' };
+            let dateOptions = { weekday: 'long', month: 'long', day: 'numeric' };
             let registeredOptions = { hour12: false, month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
             for (let i = 0; i < data.length; i++) {
                 tbody.append($('<tr>')
