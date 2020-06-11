@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 import static com.himadri.heartgardenreservation.ReservationController.dateFormat;
-import static com.himadri.heartgardenreservation.ReservationController.dateTimeFormat;
 import static com.himadri.heartgardenreservation.ReservationController.timeFormat;
 
 @Controller
@@ -57,6 +56,9 @@ public class AdminController {
     @Value("${accountsWhitelistedForAdmin}")
     private List<String> accountsWhitelistedForAdmin;
 
+    @Autowired
+    private RestaurantConfiguration restaurantConfiguration;
+
     @PostConstruct
     public void init() throws IOException {
         FirebaseOptions options = new FirebaseOptions.Builder()
@@ -71,7 +73,8 @@ public class AdminController {
     @RequestMapping(value = "/")
     public String index(Model model) {
         model.addAttribute("reservationsjshash", resourceHash.getResourceHash(ResourceHash.Resource.RESERVATION_JS));
-        model.addAttribute("reservationscsshash", resourceHash.getResourceHash(ResourceHash.Resource.RESERVATION_CSS));
+        model.addAttribute("reservationsjshash", resourceHash.getResourceHash(ResourceHash.Resource.RESERVATION_JS));
+        model.addAttribute("timezone", restaurantConfiguration.getTimezone());
         return "reservations";
     }
 
@@ -97,13 +100,13 @@ public class AdminController {
             if (customer != null) {
                 ReservationController.Reservations res = customerReservation.computeIfAbsent(customer.getId(), k -> new ReservationController.Reservations(
                     customer.getId(),
-                    dateFormat.format(new Date(reservation.getDateTime())),
+                    reservation.getDateTime(),
                     new ArrayList<>(),
                     customer.getName(),
                     customer.getEmail(),
                     customer.getNbOfGuests(),
                     reservation.getReservedTables(),
-                    dateTimeFormat.format(new Date(customer.getRegistered()))
+                    customer.getRegistered()
                 ));
 
                 res.getTimes().add(timeFormat.format(new Date(reservation.getDateTime())));

@@ -100,17 +100,16 @@ function changeDate() {
             $("#mainContent").show();
             $("#date").text(getIsoDate(startDate));
             let tbody = $("#tbody");
+            let timeZone = $("#serverDataHolder").data("timezone");
             tbody.empty();
-            let dateOptions = { weekday: 'long', month: 'long', day: 'numeric' };
-            let registeredOptions = { hour12: false, month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
             for (let i = 0; i < data.length; i++) {
                 tbody.append($('<tr>')
-                    .append($('<td>').text(new Date(data[i].date).toLocaleString('en-US', dateOptions)))
+                    .append($('<td>').text(moment(data[i].date).tz(timeZone).format("dddd, MMMM D")))
                     .append($('<td>').text(data[i].times.join(", ")))
                     .append($('<td>').text(data[i].name))
                     .append($('<td>').text(data[i].nbOfGuests))
                     .append($('<td>').text(data[i].reservedTables))
-                    .append($('<td>').text(new Date(data[i].registered).toLocaleString('en-US', registeredOptions)))
+                    .append($('<td>').text(moment(data[i].registered).tz(timeZone).format("MMMM D, HH:mm")))
                     .append($('<td>')
                         .append($('<button>')
                             .addClass("btn")

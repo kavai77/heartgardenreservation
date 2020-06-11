@@ -345,13 +345,13 @@ public class ReservationController {
     @AllArgsConstructor
     public static class Reservations {
         private final String customerUUID;
-        private final String date;
+        private final long date;
         private final List<String> times;
         private final String name;
         private final String email;
         private final int nbOfGuests;
         private final int reservedTables;
-        private final String registered;
+        private final long registered;
     }
 
     @Data
