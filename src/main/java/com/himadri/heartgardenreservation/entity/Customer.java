@@ -17,4 +17,5 @@ public class Customer {
     private String email;
     private int nbOfGuests;
     private long registered;
+    private boolean cancelled;
 }

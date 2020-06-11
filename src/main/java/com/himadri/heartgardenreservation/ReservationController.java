@@ -121,7 +121,7 @@ public class ReservationController {
             checkArgument(restaurantConfiguration.getGuestTableNbMap().containsKey(nbOfGuests));
             verifyRecatcha(recaptchaResponse, request);
             final Customer customer = new Customer(UUID.randomUUID().toString(), nameInput, emailInput, nbOfGuests,
-                System.currentTimeMillis());
+                System.currentTimeMillis(), false);
             final Key<Customer> customerKey = ofy().save().entity(customer).now();
 
             List<Long> slots = getSlotsToBeBooked(dateInput, timeInput);
@@ -166,9 +166,14 @@ public class ReservationController {
     public String cancelReservation(@RequestParam String customerUUID, Model model) {
         checkNotNull(UUID.fromString(customerUUID));
         Key<Customer> customerKey = Key.create(Customer.class, customerUUID);
+        Customer customer = ofy().load().key(customerKey).now();
         List<Reservation> reservationList = ofy().load().type(Reservation.class).filter("customerKey", customerKey).list();
-        ofy().delete().entities(reservationList);
-        ofy().delete().key(customerKey);
+        for (Reservation reservation: reservationList) {
+            reservation.setReservedTables(0);
+            ofy().save().entity(reservation);
+        }
+        customer.setCancelled(true);
+        ofy().save().entity(customer);
         return messagePage(model, "reservation.cancellation.title", "reservation.cancellation.body", "cancel.gif");
     }
 
@@ -357,6 +362,7 @@ public class ReservationController {
         private final int nbOfGuests;
         private final int reservedTables;
         private final long registered;
+        private final boolean cancelled;
     }
 
     @Data

@@ -104,6 +104,7 @@ function changeDate() {
             tbody.empty();
             for (let i = 0; i < data.length; i++) {
                 tbody.append($('<tr>')
+                    .addClass(data[i].cancelled === true ? 'linethrough' : '')
                     .append($('<td>').text(moment(data[i].date).tz(timeZone).format("dddd, MMMM D")))
                     .append($('<td>').text(data[i].times.join(", ")))
                     .append($('<td>').text(data[i].name))

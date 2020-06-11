@@ -21,3 +21,7 @@ body {
 .right {
   text-align: right;
 }
+
+.linethrough {
+  text-decoration: line-through;
+}

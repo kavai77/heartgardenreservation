@@ -73,7 +73,7 @@ public class AdminController {
     @RequestMapping(value = "/")
     public String index(Model model) {
         model.addAttribute("reservationsjshash", resourceHash.getResourceHash(ResourceHash.Resource.RESERVATION_JS));
-        model.addAttribute("reservationsjshash", resourceHash.getResourceHash(ResourceHash.Resource.RESERVATION_JS));
+        model.addAttribute("reservationscsshash", resourceHash.getResourceHash(ResourceHash.Resource.RESERVATION_CSS));
         model.addAttribute("timezone", restaurantConfiguration.getTimezone());
         return "reservations";
     }
@@ -106,7 +106,8 @@ public class AdminController {
                     customer.getEmail(),
                     customer.getNbOfGuests(),
                     reservation.getReservedTables(),
-                    customer.getRegistered()
+                    customer.getRegistered(),
+                    customer.isCancelled()
                 ));
 
                 res.getTimes().add(timeFormat.format(new Date(reservation.getDateTime())));
