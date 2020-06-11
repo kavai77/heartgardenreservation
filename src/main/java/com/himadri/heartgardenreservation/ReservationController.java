@@ -119,7 +119,7 @@ public class ReservationController {
             checkNotNull(dateFormat.parse(dateInput));
             checkNotNull(timeFormat.parse(timeInput));
             checkArgument(restaurantConfiguration.getGuestTableNbMap().containsKey(nbOfGuests));
-            verifyRecatcha(recaptchaResponse, request.getRemoteAddr());
+            verifyRecatcha(recaptchaResponse, request);
             final Customer customer = new Customer(UUID.randomUUID().toString(), nameInput, emailInput, nbOfGuests,
                 System.currentTimeMillis());
             final Key<Customer> customerKey = ofy().save().entity(customer).now();
@@ -262,8 +262,13 @@ public class ReservationController {
         return list;
     }
 
-    private void verifyRecatcha(String recaptchaResponse, String remoteAddr) throws RecaptchaException {
+    private void verifyRecatcha(String recaptchaResponse, HttpServletRequest request) throws RecaptchaException {
         RestTemplate restTemplate = restTemplateBuilder.build();
+
+        String remoteAddr = request.getHeader("X-Forwarded-For");
+        if (StringUtils.isEmpty(remoteAddr)) {
+            remoteAddr = request.getRemoteAddr();
+        }
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl("https://www.google.com/recaptcha/api/siteverify")
             .queryParam("secret", recaptchaSecret)
