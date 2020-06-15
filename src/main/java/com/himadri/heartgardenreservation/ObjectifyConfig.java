@@ -42,7 +42,6 @@ public class ObjectifyConfig {
         private final GoogleCredentials googleCredentials;
 
         public ObjectifyListener(GoogleCredentials googleCredentials) {
-
             this.googleCredentials = googleCredentials;
         }
 
@@ -59,12 +58,5 @@ public class ObjectifyConfig {
             ObjectifyService.register(Reservation.class);
             ObjectifyService.register(AdminAccess.class);
         }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent sce) {
-
-        }
     }
-
-
 }

@@ -12,7 +12,6 @@ restaurant:
   fromemail: reservations@heart-garden.nl
   oneHouseHoldLimitInForm: 2
   goLive: 2020-06-01
-  guestTableNbMap1: 1
   guestTableNbMap:
     1: 1
     2: 1
