@@ -26,6 +26,7 @@ public class ReservationControllerTest {
     void init() {
         config = new RestaurantConfiguration();
         config.setClosedDays(ImmutableSet.of(2));
+        config.setClosedDates(Set.of());
         config.setOpenHour(9);
         config.setOpenMinute(0);
         config.setCloseHour(16);
