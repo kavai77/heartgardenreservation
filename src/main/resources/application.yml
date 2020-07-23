@@ -1,5 +1,6 @@
 restaurant:
   closedDays: 2 # comma separated values, 1 - Sunday, 2 - Monday, ..., 7 - Saturday
+  closedDates: 2020-08-01, 2020-08-02, 2020-08-27
   openHour: 9
   openMinute: 0
   closeHour: 16

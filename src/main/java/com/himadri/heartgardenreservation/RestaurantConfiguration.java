@@ -6,8 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Data
@@ -15,7 +15,10 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "restaurant")
 public class RestaurantConfiguration {
     @Value("${restaurant.closedDays}")
-    private List<Integer> closedDays;
+    private Set<Integer> closedDays;
+
+    @Value("${restaurant.closedDates}")
+    private Set<String> closedDates;
 
     @Value("${restaurant.openHour}")
     private int openHour;

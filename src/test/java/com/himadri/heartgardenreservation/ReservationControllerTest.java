@@ -1,6 +1,6 @@
 package com.himadri.heartgardenreservation;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,7 +25,7 @@ public class ReservationControllerTest {
     @BeforeEach
     void init() {
         config = new RestaurantConfiguration();
-        config.setClosedDays(ImmutableList.of(2));
+        config.setClosedDays(ImmutableSet.of(2));
         config.setOpenHour(9);
         config.setOpenMinute(0);
         config.setCloseHour(16);
@@ -73,7 +74,7 @@ public class ReservationControllerTest {
 
     @Test
     void getSlotDateAndTimes() throws Exception {
-        config.setClosedDays(List.of());
+        config.setClosedDays(Set.of());
         Map<Long, Integer> reserveMap = new HashMap<>();
         reservation(reserveMap, 9, 0 , 5);
         reservation(reserveMap, 11, 0 , 4);

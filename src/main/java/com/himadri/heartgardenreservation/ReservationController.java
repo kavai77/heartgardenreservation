@@ -239,7 +239,8 @@ public class ReservationController {
     List<Long> getSlotsForDay(String dateInput) throws ParseException {
         Calendar date = Calendar.getInstance(timezone);
         date.setTime(dateFormat.parse(dateInput));
-        if (restaurantConfiguration.getClosedDays().contains(date.get(Calendar.DAY_OF_WEEK))) {
+        if (restaurantConfiguration.getClosedDays().contains(date.get(Calendar.DAY_OF_WEEK)) ||
+            restaurantConfiguration.getClosedDates().contains(dateInput)) {
             return Collections.emptyList();
         }
 
