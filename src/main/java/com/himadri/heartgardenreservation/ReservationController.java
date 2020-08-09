@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -58,9 +60,11 @@ public class ReservationController {
     private static final String EMPTY_PNG = "empty.png";
 
     private final RestaurantConfiguration restaurantConfiguration;
+    private final Set<ReservationNotAllowed> reservationNotAllowed;
     private final TimeZone timezone;
 
     @Autowired
+    @Setter
     private MessageSource messageSource;
 
     @Autowired
@@ -80,6 +84,10 @@ public class ReservationController {
 
     public ReservationController(RestaurantConfiguration restaurantConfiguration) {
         this.restaurantConfiguration = restaurantConfiguration;
+        this.reservationNotAllowed = restaurantConfiguration.getReservationNotAllowed()
+            .stream()
+            .map(ReservationNotAllowed::parse)
+            .collect(Collectors.toSet());
 
         this.timezone = TimeZone.getTimeZone(restaurantConfiguration.getTimezone());
         dateFormat.setTimeZone(this.timezone);
@@ -195,9 +203,14 @@ public class ReservationController {
                 List<SlotTimes> slotTimes = new ArrayList<>();
                 slots.add(new Slots(day, slotTimes));
                 for (Long slot : slotsForDay) {
+                    String time = timeFormat.format(new Date(slot));
+                    String text = time;
                     int freeTables = Math.max(0, restaurantConfiguration.getRestaurantCapacity() - reservationCount.getOrDefault(slot, 0));
-                    SlotTimes time = new SlotTimes(timeFormat.format(new Date(slot)), freeTables);
-                    slotTimes.add(time);
+                    boolean disabled = reservationNotAllowed.stream().anyMatch(it -> it.isNotAllowed(slot, timezone));
+                    if (disabled) {
+                        text += " (" + getMessage("reservation.disabled") + ")";
+                    }
+                    slotTimes.add(new SlotTimes(time, text, freeTables, disabled));
                 }
                 i++;
             }
@@ -349,7 +362,9 @@ public class ReservationController {
     @AllArgsConstructor
     public static class SlotTimes {
         private final String time;
+        private final String text;
         private final int freeTables;
+        private final boolean disabled;
     }
 
     @Data

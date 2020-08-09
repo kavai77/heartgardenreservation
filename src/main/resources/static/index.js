@@ -65,9 +65,10 @@ class Reservation {
         const selectedSlot = this.findSelectedDate();
         const necessarySpaces = parseInt($('#nbOfGuests').find("option:selected").data("tables"));
         for (let i = 0; i < selectedSlot.slotTimes.length; i++) {
-            const time = selectedSlot.slotTimes[i].time;
-            const enabled = this.slotEnabled(selectedSlot.slotTimes, i, this.config.slotsPerReservation, necessarySpaces);
-            timeInput.append($("<option></option>").attr("value", time).attr("disabled", !enabled).text(time));
+            const slot = selectedSlot.slotTimes[i];
+            const enabled = !slot.disabled &&
+                this.slotEnabled(selectedSlot.slotTimes, i, this.config.slotsPerReservation, necessarySpaces);
+            timeInput.append($("<option></option>").attr("value", slot.time).attr("disabled", !enabled).text(slot.text));
         }
         const isOptionEmpty = selectedSlot.slotTimes.length === 0
         if (isOptionEmpty) {

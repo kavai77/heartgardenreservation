@@ -20,6 +20,9 @@ public class RestaurantConfiguration {
     @Value("${restaurant.closedDates}")
     private Set<String> closedDates;
 
+    @Value("${restaurant.reservationNotAllowed}")
+    private Set<String> reservationNotAllowed;
+
     @Value("${restaurant.openHour}")
     private int openHour;
 

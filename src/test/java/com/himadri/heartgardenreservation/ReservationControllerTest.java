@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.context.MessageSource;
 
 import java.text.ParseException;
 import java.util.Calendar;
@@ -19,11 +22,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ReservationControllerTest {
     private static final String TIMEZONE = "Europe/Amsterdam";
+
+    @Mock
+    private MessageSource messageSource;
+
     private RestaurantConfiguration config;
     private ReservationController reservationController;
 
     @BeforeEach
     void init() {
+        MockitoAnnotations.initMocks(this);
         config = new RestaurantConfiguration();
         config.setClosedDays(ImmutableSet.of(2));
         config.setClosedDates(Set.of());
@@ -37,7 +45,9 @@ public class ReservationControllerTest {
         config.setMaxBookAheadDays(2);
         config.setTimezone(TIMEZONE);
         config.setGoLive("2001-01-01");
+        config.setReservationNotAllowed(Set.of("1-11:00-14:00"));
         reservationController = new ReservationController(config);
+        reservationController.setMessageSource(messageSource);
     }
 
     @Test
@@ -92,20 +102,20 @@ public class ReservationControllerTest {
             new ReservationController.Slots(
                 expectedDate,
                 List.of(
-                    new ReservationController.SlotTimes("09:00", 0),
-                    new ReservationController.SlotTimes("09:30", 5),
-                    new ReservationController.SlotTimes("10:00", 5),
-                    new ReservationController.SlotTimes("10:30", 5),
-                    new ReservationController.SlotTimes("11:00", 1),
-                    new ReservationController.SlotTimes("11:30", 5),
-                    new ReservationController.SlotTimes("12:00", 5),
-                    new ReservationController.SlotTimes("12:30", 5),
-                    new ReservationController.SlotTimes("13:00", 0),
-                    new ReservationController.SlotTimes("13:30", 5),
-                    new ReservationController.SlotTimes("14:00", 5),
-                    new ReservationController.SlotTimes("14:30", 5),
-                    new ReservationController.SlotTimes("15:00", 5),
-                    new ReservationController.SlotTimes("15:30", 0)
+                    new ReservationController.SlotTimes("09:00","09:00", 0, false),
+                    new ReservationController.SlotTimes("09:30","09:30", 5, false),
+                    new ReservationController.SlotTimes("10:00","10:00", 5, false),
+                    new ReservationController.SlotTimes("10:30","10:30", 5, false),
+                    new ReservationController.SlotTimes("11:00","11:00", 1, false),
+                    new ReservationController.SlotTimes("11:30","11:30", 5, false),
+                    new ReservationController.SlotTimes("12:00","12:00", 5, false),
+                    new ReservationController.SlotTimes("12:30","12:30", 5, false),
+                    new ReservationController.SlotTimes("13:00","13:00", 0, false),
+                    new ReservationController.SlotTimes("13:30","13:30", 5, false),
+                    new ReservationController.SlotTimes("14:00","14:00", 5, false),
+                    new ReservationController.SlotTimes("14:30","14:30", 5, false),
+                    new ReservationController.SlotTimes("15:00","15:00", 5, false),
+                    new ReservationController.SlotTimes("15:30","15:30", 0, false)
                 )
             ),
             actualSlots
