@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -73,8 +75,11 @@ public class AdminController {
         @RequestParam String toDate,
         @RequestHeader(X_AUTHORIZATION_FIREBASE) @FirebaseTokenParam String firebaseToken
     ) throws ParseException {
+        long fromTimestamp = dateFormat.parse(fromDate).getTime();
+        Instant twoWeeksAgo = Instant.now().minus(14, ChronoUnit.DAYS);
+        fromTimestamp = Math.max(fromTimestamp, twoWeeksAgo.toEpochMilli());
         List<Reservation> reservations = ofy().load().type(Reservation.class)
-            .filter("dateTime >=", dateFormat.parse(fromDate).getTime())
+            .filter("dateTime >=", fromTimestamp)
             .filter("dateTime <",dateFormat.parse(toDate).getTime())
             .list();
         Set<String> keySet = reservations.stream()
