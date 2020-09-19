@@ -122,6 +122,16 @@ function changeDate() {
                         .append(' ')
                         .append($('<button>')
                             .addClass("btn")
+                            .addClass("btn-info")
+                            .prop('type', 'button')
+                            .attr('data-toggle', 'tooltip')
+                            .attr('data-placement', 'top')
+                            .prop('title', data[i].phone != null ? data[i].phone : "")
+                            .text('Phone')
+                        )
+                        .append(' ')
+                        .append($('<button>')
+                            .addClass("btn")
                             .addClass("btn-danger")
                             .addClass("deleteButton")
                             .prop('type', 'button')
@@ -147,6 +157,7 @@ function changeDate() {
                     })
                 }
             })
+            $('[data-toggle="tooltip"]').tooltip()
         }
     });
 }

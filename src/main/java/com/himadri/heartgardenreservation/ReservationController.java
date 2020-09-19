@@ -113,6 +113,7 @@ public class ReservationController {
     public String reserve(
         @RequestParam String nameInput,
         @RequestParam String emailInput,
+        @RequestParam String phoneInput,
         @RequestParam String dateInput,
         @RequestParam String timeInput,
         @RequestParam int nbOfGuests,
@@ -123,13 +124,14 @@ public class ReservationController {
         try {
             checkArgument(StringUtils.isNotBlank(nameInput) && nameInput.length() <= 256);
             checkArgument(StringUtils.isNotBlank(emailInput) && emailInput.length() <= 256);
+            checkArgument(StringUtils.isNotBlank(phoneInput) && phoneInput.length() <= 256);
             checkArgument(emailValidator.isValid(emailInput));
             checkNotNull(dateFormat.parse(dateInput));
             checkNotNull(timeFormat.parse(timeInput));
             checkArgument(restaurantConfiguration.getGuestTableNbMap().containsKey(nbOfGuests));
             verifyRecatcha(recaptchaResponse, request);
-            final Customer customer = new Customer(UUID.randomUUID().toString(), nameInput, emailInput, nbOfGuests,
-                System.currentTimeMillis(), false);
+            final Customer customer = new Customer(UUID.randomUUID().toString(), nameInput, emailInput, phoneInput,
+                nbOfGuests, System.currentTimeMillis(), false);
             final Key<Customer> customerKey = ofy().save().entity(customer).now();
 
             List<Long> slots = getSlotsToBeBooked(dateInput, timeInput);
@@ -375,6 +377,7 @@ public class ReservationController {
         private final List<String> times;
         private final String name;
         private final String email;
+        private final String phone;
         private final int nbOfGuests;
         private final int reservedTables;
         private final long registered;

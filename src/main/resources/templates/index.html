@@ -28,6 +28,13 @@
           </div>
       </div>
       <div class="form-group">
+          <label for="phoneInput" th:text="#{phone}">Phone</label>
+          <input type="tel" class="form-control" id="phoneInput"  name="phoneInput" required >
+          <div class="invalid-feedback" th:text="#{phone.error}">
+              Please enter a valid phone number
+          </div>
+      </div>
+      <div class="form-group">
           <label for="nbOfGuests" th:text="#{nbOfGuests}">Number of Guests</label>
           <select id="nbOfGuests" name="nbOfGuests" class="form-control" required>
           </select>

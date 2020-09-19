@@ -15,6 +15,7 @@ public class Customer {
     private String id;
     private String name;
     private String email;
+    private String phone;
     private int nbOfGuests;
     private long registered;
     private boolean cancelled;

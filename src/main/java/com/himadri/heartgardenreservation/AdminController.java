@@ -96,6 +96,7 @@ public class AdminController {
                     new ArrayList<>(),
                     customer.getName(),
                     customer.getEmail(),
+                    customer.getPhone(),
                     customer.getNbOfGuests(),
                     reservation.getReservedTables(),
                     customer.getRegistered(),
