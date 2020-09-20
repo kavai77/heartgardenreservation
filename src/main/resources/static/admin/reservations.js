@@ -89,6 +89,7 @@ $( document ).ready(function() {
 function changeDate() {
     $("#mainContent").hide();
     $("#spinner").show();
+
     $.get({
         url: "/admin/reservations",
         data: {
@@ -117,7 +118,7 @@ function changeDate() {
                             .addClass("btn-info")
                             .prop('href', 'mailto:'+data[i].email)
                             .prop('role', 'button')
-                            .text('Email')
+                            .append(addActionIcon('envelope'))
                         )
                         .append(' ')
                         .append($('<button>')
@@ -127,7 +128,7 @@ function changeDate() {
                             .attr('data-toggle', 'tooltip')
                             .attr('data-placement', 'top')
                             .prop('title', data[i].phone != null ? data[i].phone : "")
-                            .text('Phone')
+                            .append(addActionIcon('telephone'))
                         )
                         .append(' ')
                         .append($('<button>')
@@ -137,7 +138,7 @@ function changeDate() {
                             .prop('type', 'button')
                             .data('customerUUID', data[i].customerUUID)
                             .data('customerName', data[i].name)
-                            .text('Delete')
+                            .append(addActionIcon('trash'))
                         )
                     )
                 );
@@ -179,4 +180,12 @@ function authStateObserver(user) {
         $("#mainContent").hide();
         $("#date").text("");
     }
+}
+
+function addActionIcon(svg) {
+    return $(`
+        <svg class="bi" width="16" height="16" fill="currentColor">
+           <use xlink:href="/bootstrap-icons.svg#` + svg + `"/>
+        </svg>
+    `);
 }
