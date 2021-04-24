@@ -31,3 +31,9 @@ Save image:
 ```
 docker save -o dockerimage kavai77/heartgardenreservation:1.0
 ```
+
+### Upload image
+```
+docker login docker.himadri.eu:5000
+docker push docker.himadri.eu:5000/kavai77/heartgardenreservation:1.0
+```

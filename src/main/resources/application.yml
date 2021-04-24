@@ -8,13 +8,13 @@ restaurant:
   closeMinute: 00
   slotInMinutes: 30
   slotsPerReservation: 2 # how many 30 minute slots are taken for a reservation
-  restaurantCapacity: 6
+  restaurantCapacity: 6 # how many tables are there in the restaurant
   maxBookAheadDays: 14
   timezone: Europe/Amsterdam
   fromemail: reservations@heart-garden.nl
   oneHouseHoldLimitInForm: 2
   goLive: 2021-04-28
-  guestTableNbMap: # how many tables are taken for a number of guests in one reservation: guest nb -> table numbeer
+  guestTableNbMap: # how many tables are taken for a number of guests in one reservation: guest nb -> number of tables
     1: 1
     2: 2
     3: 3
