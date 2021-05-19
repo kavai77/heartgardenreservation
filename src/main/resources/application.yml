@@ -2,10 +2,10 @@ restaurant:
   closedDays: 2 # comma separated values, 1 - Sunday, 2 - Monday, ..., 7 - Saturday
   closedDates: 2020-08-01, 2020-08-02, 2020-08-27
   reservationNotAllowed: # 7-11:00-14:00, 1-11:00-14:00
-  openHour: 12
+  openHour: 9
   openMinute: 0
-  closeHour: 17
-  closeMinute: 00
+  closeHour: 16
+  closeMinute: 30
   slotInMinutes: 30
   slotsPerReservation: 2 # how many 30 minute slots are taken for a reservation
   restaurantCapacity: 4 # how many tables are there in the restaurant
