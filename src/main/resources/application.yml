@@ -8,7 +8,7 @@ restaurant:
   closeMinute: 30
   slotInMinutes: 30
   slotsPerReservation: 2 # how many 30 minute slots are taken for a reservation
-  restaurantCapacity: 4 # how many tables are there in the restaurant
+  restaurantCapacity: 10 # how many tables are there in the restaurant
   maxBookAheadDays: 14
   timezone: Europe/Amsterdam
   fromemail: reservations@heart-garden.nl
