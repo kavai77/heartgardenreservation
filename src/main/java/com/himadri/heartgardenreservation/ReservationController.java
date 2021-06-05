@@ -93,6 +93,7 @@ public class ReservationController {
         dateFormat.setTimeZone(this.timezone);
         timeFormat.setTimeZone(this.timezone);
         dateTimeFormat.setTimeZone(this.timezone);
+        LOGGER.info("Restaurant configuration: " + restaurantConfiguration);
     }
 
 
